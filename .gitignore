@@ -1,0 +1,8 @@
+# Ignore these
+.vs
+.vs/*
+build/*
+opengl/*
+freeglut/*
+glew/*
+glm/*
