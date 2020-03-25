@@ -10,6 +10,8 @@
 
 #include "json.hpp"
 
+#include <cstdlib>
+
 using json = nlohmann::json;
 
 const char *PATH = "scenes/";
@@ -72,23 +74,28 @@ void choose_scene(char const *fn) {
 
 
 /****************************************************************************/
+
 bool hitSphere(glm::vec3 d, glm::vec3 e, glm::vec3 c, float r, glm::vec3& hit) {
+	// e - eye
+	// d - pixel on the screen
+	// c - center of a sphere
+	// r - radius of a sphere
 
 	// solving quadratic equation
-	double disc = pow(glm::dot(d, e - c), 2) - (glm::dot(d, d) * glm::dot(e - c, e - c) - r*r);
+	float disc = pow(dot(d, e - c), 2) - (dot(d, d) * dot(e - c, e - c) - r*r);
 
 	if (disc < 0) {
 		return false;
 	}
 
-	double sqrtDisc = sqrt(disc);
-	double rest = glm::dot(-d, e - c) / glm::dot(d, d);
+	float sqrtDisc = sqrt(disc);
+	float rest = dot(-d, e - c) / dot(d, d);
 	
-	double t;
+	float t;
 
 	if (disc > 0) {
-		double t1 = rest + sqrtDisc / glm::dot(d, d);
-		double t2 = rest - sqrtDisc / glm::dot(d, d);
+		float t1 = rest + sqrtDisc / dot(d, d);
+		float t2 = rest - sqrtDisc / dot(d, d);
 		if (t1 < t2) {
 			t = t1;
 		}
@@ -100,18 +107,42 @@ bool hitSphere(glm::vec3 d, glm::vec3 e, glm::vec3 c, float r, glm::vec3& hit) {
 		t = rest;
 	}
 
-	hit = e + float(t) * d;
+	hit = e + t * d;
 	return true;
 }
 
+/****************************************************************************/
+
+bool hitPlane(glm::vec3 d, glm::vec3 e, glm::vec3 a, glm::vec3 n, glm::vec3& hit) {
+	// e - eye
+	// d - pixel on the screen
+	// a - position of a plane
+	// n - normal vector    
+
+	float dotND = dot(n, d); // sign tells us which side of a plane was hit
+
+	if (abs(dotND) > 0.001) {
+		float t = dot(n, a - e) / abs(dotND);
+		if (t > 0) { //we have a collision
+			hit = e + t * d;
+			return true;
+		}
+	}	
+
+	return false;
+}
+
+
+/****************************************************************************/
+
 bool trace(const point3 &e, const point3 &s, colour3 &colour, bool pick) {
+
 	// NOTE 1: This is a demo, not ray tracing code! You will need to replace all of this with your own code...
 	// NOTE 2: You can work with JSON objects directly (like this sample code), read the JSON objects into your own data structures once and render from those (probably in choose_scene), or hard-code the objects in your own data structures and choose them by name in choose_scene; e.g. choose_scene('e') would pick the same scene as the one in "e.json". Your choice.
 	// If you want to use this JSON library, https://github.com/nlohmann/json for more information. The code below gives examples of everything you should need: getting named values, iterating over arrays, and converting types.
 	
-	glm::vec3 light(0.5, 10, 2); // this should normally be taken from a file
-	//json& lights = scene["lights"];
-
+	//json& lights = scene["lights"]; // TODO use lights from a file
+	glm::vec3 light(-5, 10, 5);
 
 	// traverse the objects
 	json &objects = scene["objects"];
@@ -120,28 +151,92 @@ bool trace(const point3 &e, const point3 &s, colour3 &colour, bool pick) {
 		
 		// every object in the scene will have a "type"
 		if (object["type"] == "sphere") {
-			// This is NOT ray-sphere intersection
 			// Every sphere will have a position and a radius
 			std::vector<float> pos = object["position"];
-			point3 p = -(s - e) * pos[2];
 
-			glm::vec3 c = vector_to_vec3(pos);
-			glm::vec3 d = s - e;
+			glm::vec3 c = vector_to_vec3(pos);				
+			glm::vec3 d = s - e; // from viewer
 			float r = float(object["radius"]);
 
-			glm::vec3 hitPos;
+			glm::vec3 hitPos;								
 			bool isHit = hitSphere(d, e, c, r, hitPos);
 
 			if (isHit) {
 				// Every object will have a material
 				json &material = object["material"];
-				std::vector<float> diffuse = material["diffuse"];
-				colour = vector_to_vec3(diffuse);
+				glm::vec3 ambient = vector_to_vec3(material["ambient"]);
+				glm::vec3 diffuse = vector_to_vec3(material["diffuse"]);
+				//glm::vec3 specular = vector_to_vec3(material["specular"]);
+				float shininess = material["shininess"];
+						
+				glm::vec3 L = glm::normalize(light - hitPos); // to light 
+				glm::vec3 N = glm::normalize(hitPos - c); // normal
+				glm::vec3 V = glm::normalize(e-s); // to viewer
 
-				glm::vec3 L = glm::normalize(light - hitPos);
-				glm::vec3 N = glm::normalize(hitPos - c);
+				float dotLN = glm::dot(L,N);	
+				diffuse *= dotLN;
 
-				colour = colour * glm::dot(N,L);
+				if (dotLN < 0) { // cant see an object from here					
+					diffuse = glm::vec3(0.0, 0.0, 0.0);
+					//specular = glm::vec3(0.0, 0.0, 0.0);
+				}
+				else {
+					glm::vec3 R = glm::normalize(2 * dotLN * N - L); // perfect light reflection
+					float dotRV = glm::dot(R, V);
+					if (dotRV < 0) {
+						//specular = glm::vec3(0.0, 0.0, 0.0);
+					}
+					else {
+						//specular *= glm::pow(dotRV, shininess);
+					}											
+				}							
+
+				colour = ambient + diffuse; //+specular;
+
+				// This is NOT correct: it finds the first hit, not the closest
+				return true;
+			}
+		}
+
+
+		if (object["type"] == "plane") {	
+			glm::vec3 a = vector_to_vec3(object["position"]);
+			glm::vec3 d = s - e; // from viewer
+			glm::vec3 N = vector_to_vec3(object["normal"]);
+			glm::vec3 hitPos;
+
+			bool isHit = hitPlane(d, e, a, N, hitPos);
+
+			if (isHit) {
+				// Every object will have a material
+				json& material = object["material"];
+				glm::vec3 ambient = vector_to_vec3(material["ambient"]);
+				glm::vec3 diffuse = vector_to_vec3(material["diffuse"]);
+				glm::vec3 specular = vector_to_vec3(material["specular"]);
+				float shininess = material["shininess"];
+
+				glm::vec3 L = glm::normalize(light - hitPos); // to light 
+				glm::vec3 V = glm::normalize(e - s); // to viewer
+
+				float dotLN = glm::dot(L, N);
+				diffuse *= dotLN;
+
+				if (dotLN < 0) { // cant see an object from here					
+					diffuse = glm::vec3(0.0, 0.0, 0.0);
+					specular = glm::vec3(0.0, 0.0, 0.0);
+				}
+				else {
+					glm::vec3 R = glm::normalize(2 * dotLN * N - L); // perfect light reflection
+					float dotRV = glm::dot(R, V);
+					if (dotRV < 0) {
+						specular = glm::vec3(0.0, 0.0, 0.0);
+					}
+					else {
+						specular *= glm::pow(dotRV, shininess);
+					}
+				}
+
+				colour = ambient + diffuse + specular;
 
 				// This is NOT correct: it finds the first hit, not the closest
 				return true;
