@@ -120,18 +120,36 @@ bool hitPlane(glm::vec3 d, glm::vec3 e, glm::vec3 a, glm::vec3 n, glm::vec3& hit
 	// n - normal vector    
 
 	float dotND = dot(n, d); // sign tells us which side of a plane was hit
-
 	if (abs(dotND) > 0.001) {
-		float t = dot(n, a - e) / abs(dotND);
-		if (t > 0) { //we have a collision
-			hit = e + t * d;
-			return true;
-		}
+		float t = dot(n, a - e) / abs(dotND);		
+		hit = e + t * d;
+		return true;		
 	}	
-
 	return false;
 }
 
+
+
+void phong( glm::vec3 L, glm::vec3 N, glm::vec3 V, 
+	glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& specular, float shininess) {
+	
+	float dotLN = glm::dot(L, N);
+	if (dotLN < 0) { // cant see an object from here					
+		diffuse = glm::vec3(0.0, 0.0, 0.0);
+		specular = glm::vec3(0.0, 0.0, 0.0);
+	}
+	else {
+		diffuse *= dotLN;
+		glm::vec3 R = glm::normalize(2 * dotLN * N - L); // perfect light reflection
+		float dotRV = glm::dot(R, V);
+		if (dotRV < 0) {
+			specular = glm::vec3(0.0, 0.0, 0.0);
+		}
+		else {
+			specular *= glm::pow(dotRV, shininess);
+		}
+	}
+}
 
 /****************************************************************************/
 
@@ -166,32 +184,16 @@ bool trace(const point3 &e, const point3 &s, colour3 &colour, bool pick) {
 				json &material = object["material"];
 				glm::vec3 ambient = vector_to_vec3(material["ambient"]);
 				glm::vec3 diffuse = vector_to_vec3(material["diffuse"]);
-				//glm::vec3 specular = vector_to_vec3(material["specular"]);
+				glm::vec3 specular = vector_to_vec3(material["specular"]);
 				float shininess = material["shininess"];
 						
 				glm::vec3 L = glm::normalize(light - hitPos); // to light 
 				glm::vec3 N = glm::normalize(hitPos - c); // normal
 				glm::vec3 V = glm::normalize(e-s); // to viewer
 
-				float dotLN = glm::dot(L,N);	
-				diffuse *= dotLN;
+				phong(L, N, V, ambient, diffuse, specular, shininess);
 
-				if (dotLN < 0) { // cant see an object from here					
-					diffuse = glm::vec3(0.0, 0.0, 0.0);
-					//specular = glm::vec3(0.0, 0.0, 0.0);
-				}
-				else {
-					glm::vec3 R = glm::normalize(2 * dotLN * N - L); // perfect light reflection
-					float dotRV = glm::dot(R, V);
-					if (dotRV < 0) {
-						//specular = glm::vec3(0.0, 0.0, 0.0);
-					}
-					else {
-						//specular *= glm::pow(dotRV, shininess);
-					}											
-				}							
-
-				colour = ambient + diffuse; //+specular;
+				colour = ambient + diffuse + specular;
 
 				// This is NOT correct: it finds the first hit, not the closest
 				return true;
@@ -207,34 +209,26 @@ bool trace(const point3 &e, const point3 &s, colour3 &colour, bool pick) {
 
 			bool isHit = hitPlane(d, e, a, N, hitPos);
 
-			if (isHit) {
+			if (isHit) {		
 				// Every object will have a material
 				json& material = object["material"];
 				glm::vec3 ambient = vector_to_vec3(material["ambient"]);
 				glm::vec3 diffuse = vector_to_vec3(material["diffuse"]);
-				glm::vec3 specular = vector_to_vec3(material["specular"]);
-				float shininess = material["shininess"];
+				glm::vec3 specular = glm::vec3(0.0, 0.0, 0.0);
+				float shininess = 0.0;
+				/*try {
+					specular = vector_to_vec3(material["specular"]);
+					shininess = material["shininess"];
+				}
+				catch (int e) {}*/
+		
+				
+				
 
 				glm::vec3 L = glm::normalize(light - hitPos); // to light 
 				glm::vec3 V = glm::normalize(e - s); // to viewer
 
-				float dotLN = glm::dot(L, N);
-				diffuse *= dotLN;
-
-				if (dotLN < 0) { // cant see an object from here					
-					diffuse = glm::vec3(0.0, 0.0, 0.0);
-					specular = glm::vec3(0.0, 0.0, 0.0);
-				}
-				else {
-					glm::vec3 R = glm::normalize(2 * dotLN * N - L); // perfect light reflection
-					float dotRV = glm::dot(R, V);
-					if (dotRV < 0) {
-						specular = glm::vec3(0.0, 0.0, 0.0);
-					}
-					else {
-						specular *= glm::pow(dotRV, shininess);
-					}
-				}
+				phong(L, N, V, ambient, diffuse, specular, shininess);
 
 				colour = ambient + diffuse + specular;
 
