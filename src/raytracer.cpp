@@ -19,6 +19,8 @@ const char *PATH = "scenes/";
 double fov = 60;
 colour3 background_colour(0, 0, 0);
 
+enum ObjectType { Sphere, Plane, Mesh };
+
 json scene;
 
 /****************************************************************************/
@@ -156,8 +158,8 @@ bool hitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, fl
 
 bool hitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, glm::vec3 N, glm::vec3& hit) {
 	float dotND = dot(N, rayDir); // sign tells us which side of a plane was hit
-	if (abs(dotND) > 0.001) {
-		float t = dot(N, planePos - rayOrigin) / abs(dotND);
+	if (dotND < 0) {
+		float t = dot(N, planePos - rayOrigin) / dotND;
 		hit = rayOrigin + t * rayDir;
 		return true;		
 	}	
@@ -201,7 +203,7 @@ bool hitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
 	glm::vec3 c = vector_to_vec3(triangle[2]);
 
 	N = normalize(cross((b - a),(c - a)));
-	bool isPlaneHit = hitPlane(rayOrigin, rayDir, a, -N, hitPos);
+	bool isPlaneHit = hitPlane(rayOrigin, rayDir, a, N, hitPos);
 	
 	if (isPlaneHit) {		
 		float axProj = dot(cross((b - a), (hitPos - a)), N);
@@ -255,13 +257,44 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 	// If you want to use this JSON library, https://github.com/nlohmann/json for more information. The code below gives examples of everything you should need: getting named values, iterating over arrays, and converting types.
 	
 	//json& lights = scene["lights"]; // TODO use lights from a file
-	glm::vec3 light(-5, 10, 5);
+	glm::vec3 light(5, 10, 2);
+
+	bool didHit = false;
+	glm::vec3 firstHit;
+	float firstRayLen = 999;
 
 	// traverse the objects
 	json &objects = scene["objects"];
 	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
 		json &object = *it;
 		
+
+		if (object["type"] == "plane") {
+			glm::vec3 a = vector_to_vec3(object["position"]);
+			glm::vec3 rayDir = pixel - rayOrigin;
+			glm::vec3 N = vector_to_vec3(object["normal"]);
+			glm::vec3 hitPos;
+
+			bool isHit = hitPlane(rayOrigin, rayDir, a, N, hitPos);
+
+			if (isHit) {
+				float rayLen = glm::length(hitPos-rayOrigin);
+				if (rayLen < firstRayLen) {
+					glm::vec3 ambient = getAmbient(object);
+					glm::vec3 diffuse = getDiffuse(object);
+					//glm::vec3 specular = getSpecular(object); // planes don't have this component in the examples ...
+					//float shininess = getShininess(object);
+					glm::vec3 L = glm::normalize(light - hitPos);
+					glm::vec3 V = glm::normalize(pixel - hitPos);
+					colour = phong(L, N, V, ambient, diffuse); //specular, shininess);
+					firstHit = hitPos; // assuming this is the longest ray possible	
+					firstRayLen = rayLen;
+					
+				}
+				didHit = true;
+			}
+		}
+
 		if (object["type"] == "mesh") {
 	
 			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
@@ -270,14 +303,18 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 				glm::vec3 N;
 				bool isHit = hitTriangle(rayOrigin, rayDir, triangle, hitPos, N);
 				if (isHit) {
-					glm::vec3 ambient = getAmbient(object);
-					glm::vec3 diffuse = getDiffuse(object);
-					glm::vec3 L = normalize(light - hitPos);
-					glm::vec3 V = normalize(pixel - rayOrigin);
-					colour = phong(L, N, V, ambient, diffuse);
-
-					// This is NOT correct: it finds the first hit, not the closest
-					return true;
+					float rayLen = glm::length(hitPos-rayOrigin);
+					if (rayLen < firstRayLen) {
+						glm::vec3 ambient = getAmbient(object);
+						glm::vec3 diffuse = getDiffuse(object);
+						glm::vec3 L = normalize(light - hitPos);
+						glm::vec3 V = normalize(pixel - rayOrigin);
+						colour = phong(L, N, V, ambient, diffuse);
+						firstHit = hitPos;
+						firstRayLen = rayLen;
+						
+					}
+					didHit = true;
 				}
 			}
 		}
@@ -295,48 +332,26 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 			bool isHit = hitSphere(rayOrigin, rayDir, c, r, hitPos);
 
 			if (isHit) {
-				glm::vec3 ambient = getAmbient(object);
-				glm::vec3 diffuse = getDiffuse(object);
-				glm::vec3 specular = getSpecular(object);
-				float shininess = getShininess(object);
-						
-				glm::vec3 L = normalize(light - hitPos); 
-				glm::vec3 N = normalize(hitPos - c); 
-				glm::vec3 V = normalize(pixel - hitPos); 
-							
-				colour = phong(L, N, V, ambient, diffuse, specular, shininess);
-
-				// This is NOT correct: it finds the first hit, not the closest
-				return true;
+				float rayLen = glm::length(hitPos-rayOrigin);
+				if (rayLen < firstRayLen) {
+					glm::vec3 ambient = getAmbient(object);
+					glm::vec3 diffuse = getDiffuse(object);
+					glm::vec3 specular = getSpecular(object);
+					float shininess = getShininess(object);
+					glm::vec3 L = normalize(light - hitPos);
+					glm::vec3 N = normalize(hitPos - c);
+					glm::vec3 V = normalize(pixel - hitPos);
+					colour = phong(L, N, V, ambient, diffuse, specular, shininess);
+					firstHit = hitPos;
+					firstRayLen = rayLen;					
+				}
+				didHit = true;
 			}
-		}
+		}		
+	}
 
-
-		//if (object["type"] == "plane") {	
-		//	glm::vec3 a = vector_to_vec3(object["position"]);
-		//	glm::vec3 rayDir = pixel - rayOrigin; 
-		//	glm::vec3 N = vector_to_vec3(object["normal"]);
-		//	glm::vec3 hitPos;
-
-		//	bool isHit = hitPlane(rayOrigin, rayDir, a, N, hitPos);
-
-		//	if (isHit) {		
-		//		glm::vec3 ambient = getAmbient(object);
-		//		glm::vec3 diffuse = getDiffuse(object);
-		//		//glm::vec3 specular = getSpecular(object); // planes don't have this component in the examples ...
-		//		//float shininess = getShininess(object);
-
-		//		glm::vec3 L = glm::normalize(light - hitPos);
-		//		glm::vec3 V = glm::normalize(pixel - hitPos);
-
-		//		colour = phong(L, N, V, ambient, diffuse); //specular, shininess);
-
-		//		// This is NOT correct: it finds the first hit, not the closest
-		//		return true;
-		//	}
-		//}
-
-		
+	if (didHit) {
+		return true;
 	}
 
 	return false;
