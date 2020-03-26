@@ -221,30 +221,31 @@ bool hitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
 /****************************************************************************/
 
 glm::vec3 phong( glm::vec3 L, glm::vec3 N, glm::vec3 V,
-	glm::vec3 ambient = glm::vec3(0.0, 0.0, 0.0), 
-	glm::vec3 diffuse = glm::vec3(0.0, 0.0, 0.0), 
-	glm::vec3 specular = glm::vec3(0.0, 0.0, 0.0), 
-	float shininess = 0.0) {
+	glm::vec3 Kd = glm::vec3(0.0, 0.0, 0.0), // material diffuse
+	glm::vec3 Ks = glm::vec3(0.0, 0.0, 0.0), // material specular
+	float shininess = 0.0,	// material
+	glm::vec3 Ids = glm::vec3(0.0, 0.0, 0.0)) // light diffuse or ligth specular ..oh well, ok
+{
 	
 	float dotLN = glm::dot(L, N);
 	if (dotLN < 0) { // light does not reach the object					
-		diffuse = glm::vec3(0.0, 0.0, 0.0);
-		specular = glm::vec3(0.0, 0.0, 0.0);
+		Kd = glm::vec3(0.0, 0.0, 0.0);
+		Ks = glm::vec3(0.0, 0.0, 0.0);
 	}
 	else {
-		diffuse *= dotLN;
-		if (specular != glm::vec3(0.0, 0.0, 0.0)) { // only calculate this for non-zero specular component
+		Kd *= dotLN;
+		if (Ks != glm::vec3(0.0, 0.0, 0.0)) { // only calculate this for non-zero specular component
 			glm::vec3 R = glm::normalize(2 * dotLN * N - L); 
 			float dotRV = glm::dot(R, V);
 			if (dotRV < 0) { // viewer doesn't see the bright spot
-				specular = glm::vec3(0.0, 0.0, 0.0);
+				Ks = glm::vec3(0.0, 0.0, 0.0);
 			}
 			else {
-				specular *= glm::pow(dotRV, shininess);
+				Ks *= glm::pow(dotRV, shininess);
 			}
 		}		
 	}
-	return ambient + diffuse + specular;
+	return Kd*Ids + Ks*Ids;
 }
 
 
@@ -256,19 +257,35 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 	// NOTE 2: You can work with JSON objects directly (like this sample code), read the JSON objects into your own data structures once and render from those (probably in choose_scene), or hard-code the objects in your own data structures and choose them by name in choose_scene; e.g. choose_scene('e') would pick the same scene as the one in "e.json". Your choice.
 	// If you want to use this JSON library, https://github.com/nlohmann/json for more information. The code below gives examples of everything you should need: getting named values, iterating over arrays, and converting types.
 	
-	//json& lights = scene["lights"]; // TODO use lights from a file
 	glm::vec3 light(5, 10, 2);
 
 	bool didHit = false;
 	glm::vec3 firstHit;
 	float firstRayLen = 999;
 
+	// Lights
+	glm::vec3 Ia;
+	std::vector<glm::vec3> PLight_colours;
+	std::vector<glm::vec3> PLight_positions;
+
+	// traverse the lights
+	json & lights = scene["lights"];
+	for (json::iterator it = lights.begin(); it != lights.end(); ++it) {
+		json& light = *it;
+		if (light["type"] == "ambient") {
+			Ia = vector_to_vec3(light["color"]);
+		}
+		if (light["type"] == "point") {
+			PLight_colours.push_back(vector_to_vec3(light["color"]));
+			PLight_positions.push_back(vector_to_vec3(light["position"]));
+		}
+	}
+	
 	// traverse the objects
-	json &objects = scene["objects"];
+	json & objects = scene["objects"];
 	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
 		json &object = *it;
 		
-
 		if (object["type"] == "plane") {
 			glm::vec3 a = vector_to_vec3(object["position"]);
 			glm::vec3 rayDir = pixel - rayOrigin;
@@ -280,16 +297,23 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 			if (isHit) {
 				float rayLen = glm::length(hitPos-rayOrigin);
 				if (rayLen < firstRayLen) {
-					glm::vec3 ambient = getAmbient(object);
-					glm::vec3 diffuse = getDiffuse(object);
-					//glm::vec3 specular = getSpecular(object); // planes don't have this component in the examples ...
-					//float shininess = getShininess(object);
-					glm::vec3 L = glm::normalize(light - hitPos);
-					glm::vec3 V = glm::normalize(pixel - hitPos);
-					colour = phong(L, N, V, ambient, diffuse); //specular, shininess);
+					// Material
+					glm::vec3 Ka = getAmbient(object);
+					glm::vec3 Kd = getDiffuse(object);
+					glm::vec3 Ks = getSpecular(object);
+					float shininess = getShininess(object);
+
+					glm::vec3 V = normalize(pixel - hitPos);
+					colour = Ka * Ia; // ambient component
+
+					// Light
+					for (int i = 0; i < PLight_positions.size(); i++) {
+						glm::vec3 L = normalize(PLight_positions[i] - hitPos);
+						colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
+					}
+
 					firstHit = hitPos; // assuming this is the longest ray possible	
-					firstRayLen = rayLen;
-					
+					firstRayLen = rayLen;					
 				}
 				didHit = true;
 			}
@@ -305,14 +329,22 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 				if (isHit) {
 					float rayLen = glm::length(hitPos-rayOrigin);
 					if (rayLen < firstRayLen) {
-						glm::vec3 ambient = getAmbient(object);
-						glm::vec3 diffuse = getDiffuse(object);
-						glm::vec3 L = normalize(light - hitPos);
-						glm::vec3 V = normalize(pixel - rayOrigin);
-						colour = phong(L, N, V, ambient, diffuse);
-						firstHit = hitPos;
-						firstRayLen = rayLen;
+						// Material
+						glm::vec3 Ka = getAmbient(object);
+						glm::vec3 Kd = getDiffuse(object);
+						glm::vec3 Ks = getSpecular(object);
+						float shininess = getShininess(object);
 						
+						glm::vec3 V = normalize(pixel - hitPos);
+						colour = Ka * Ia; // ambient component
+
+						// Light
+						for (int i = 0; i < PLight_positions.size(); i++) {
+							glm::vec3 L = normalize(PLight_positions[i] - hitPos);
+							colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
+						}
+						firstHit = hitPos;
+						firstRayLen = rayLen;						
 					}
 					didHit = true;
 				}
@@ -334,14 +366,24 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 			if (isHit) {
 				float rayLen = glm::length(hitPos-rayOrigin);
 				if (rayLen < firstRayLen) {
-					glm::vec3 ambient = getAmbient(object);
-					glm::vec3 diffuse = getDiffuse(object);
-					glm::vec3 specular = getSpecular(object);
-					float shininess = getShininess(object);
-					glm::vec3 L = normalize(light - hitPos);
+
+					// Material
+					glm::vec3 Ka = getAmbient(object);
+					glm::vec3 Kd = getDiffuse(object);
+					glm::vec3 Ks = getSpecular(object);
+					float shininess = getShininess(object);		
+
 					glm::vec3 N = normalize(hitPos - c);
 					glm::vec3 V = normalize(pixel - hitPos);
-					colour = phong(L, N, V, ambient, diffuse, specular, shininess);
+			
+					colour = Ka * Ia; // ambient component
+					
+					// Light
+					for (int i=0; i< PLight_positions.size(); i++) {
+						glm::vec3 L = normalize(PLight_positions[i] - hitPos);
+						colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
+					}
+
 					firstHit = hitPos;
 					firstRayLen = rayLen;					
 				}
