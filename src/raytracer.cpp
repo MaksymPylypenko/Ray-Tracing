@@ -320,8 +320,7 @@ glm::vec3 applyLights(json& object,json& lights,
 			float lightRayLen = length(L);
 			L = normalize(L);
 
-			float angle = acos(dot(Dir, L));
-			//float angle = dot(Dir, L);
+			float angle = dot(Dir, L);
 			if (angle <= light["cutoff"]) {
 				if (!isShadow(hitPos, L, lightRayLen)) {
 					colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
