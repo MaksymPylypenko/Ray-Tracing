@@ -332,10 +332,10 @@ glm::vec3 applyLights(json& object,json& lights,
 
 bool trace(const point3& rayOrigin, const point3& screenPoint, colour3& colour, bool pick) {
 	glm::vec3 rayDir = screenPoint - rayOrigin;
-	return trace(rayOrigin, rayDir, colour);
+	return trace(rayOrigin, rayDir, colour, 10);
 }
 
-bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour) {
+bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour, int bouncesLeft) {
 	bool didHit = false;
 
 	json& lights = scene["lights"];
@@ -401,17 +401,17 @@ bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour) {
 		
 		json& material = hitObj["material"];
 		if (material.find("reflective") != material.end()) {
-			glm::vec3 reflected = vector_to_vec3(material["reflective"]);
-			glm::vec3 absorbed = glm::vec3(1,1,1) - reflected;			
-			
-			colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
+			if (bouncesLeft > 0) {
+				glm::vec3 reflected = vector_to_vec3(material["reflective"]);
+				glm::vec3 absorbed = glm::vec3(1, 1, 1) - reflected;
+				colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
 
-			glm::vec3 R = normalize(2 * dot(hitNormal,V) * hitNormal - V);
-			glm::vec3 rColour;
-			if (trace(hitPos, R, rColour)) {
-				colour += reflected * rColour;
-			}
-			
+				glm::vec3 R = normalize(2 * dot(hitNormal, V) * hitNormal - V);
+				glm::vec3 rColour;
+				if (trace(hitPos, R, rColour, bouncesLeft - 1)) {
+					colour += reflected * rColour;
+				}
+			}			
 		}
 		else {
 			colour = applyLights(hitObj, lights, hitNormal, V, hitPos);
