@@ -196,7 +196,7 @@ bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
 			}
 		}
 
-		if (object["type"] == "mesh") {
+		else if (object["type"] == "mesh") {
 			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
 				glm::vec3 N; // not used
 				float rayLen; // not used
@@ -205,7 +205,7 @@ bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
 				}
 			}
 		}
-		if (object["type"] == "sphere") {
+		else if (object["type"] == "sphere") {
 			glm::vec3 c = vector_to_vec3(object["position"]);
 			float r = float(object["radius"]);
 			float rayLen; // not used
@@ -312,15 +312,12 @@ glm::vec3 applyLights(json& object,json& lights,
 				colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
 			}
 		}
-		else if (light["type"] == "spot") {
-			glm::vec3 pos = vector_to_vec3(light["position"]);
-			glm::vec3 Dir = normalize(pos - vector_to_vec3(light["direction"]));
-			
+		else if (light["type"] == "spot") {		
 			glm::vec3 L = vector_to_vec3(light["position"]) - hitPos;
 			float lightRayLen = length(L);
 			L = normalize(L);
-
-			float angle = dot(Dir, L);
+			glm::vec3 Dir = normalize(vector_to_vec3(light["direction"]));
+			float angle = glm::degrees(acos(dot(Dir, -L)));
 			if (angle <= light["cutoff"]) {
 				if (!isShadow(hitPos, L, lightRayLen)) {
 					colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
