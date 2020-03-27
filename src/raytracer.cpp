@@ -77,51 +77,7 @@ void choose_scene(char const *fn) {
 
 /****************************************************************************/
 
-glm::vec3 getAmbient(json& object) {
-	json& material = object["material"];
-	try {
-		return vector_to_vec3(material["ambient"]);
-	}
-	catch (...) {
-		return glm::vec3(0.0, 0.0, 0.0);
-	}
-}
-
-glm::vec3 getDiffuse(json& object) {
-	json& material = object["material"];
-	try {
-		return vector_to_vec3(material["diffuse"]);
-	}
-	catch (...) {
-		return glm::vec3(0.0, 0.0, 0.0);
-	}
-}
-
-glm::vec3 getSpecular(json& object) {
-	json& material = object["material"];
-	try {
-		return vector_to_vec3(material["specular"]);
-	}
-	catch (...) {
-		return glm::vec3(0.0, 0.0, 0.0);
-	}
-}
-
-
-float getShininess(json& object) {
-	json& material = object["material"];
-	try {
-		return (material["shininess"]);
-	}
-	catch (...) {
-		return 0.0;
-	}
-}
-
-
-/****************************************************************************/
-
-bool hitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, float radius, glm::vec3& hit) {
+bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, float radius, glm::vec3& nearestHit) {
 
 	float bSq = pow(dot(rayDir, rayOrigin - sphereCenter), 2);
 	float FourAC = dot(rayDir, rayDir) * dot(rayOrigin - sphereCenter, rayOrigin - sphereCenter) - radius * radius;
@@ -150,25 +106,25 @@ bool hitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, fl
 		t = rest;
 	}
 
-	hit = rayOrigin + t * rayDir;
+	nearestHit = rayOrigin + t * rayDir;
 	return true;
 }
 
 /****************************************************************************/
 
-bool hitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, glm::vec3 N, glm::vec3& hit) {
-	float dotND = dot(N, rayDir); // sign tells us which side of a plane was hit
+bool isHitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, glm::vec3 N, glm::vec3& nearestHit) {
+	float dotND = dot(N, rayDir); // sign tells us which side of a plane was nearestHit
 	if (dotND < 0) {
 		float t = dot(N, planePos - rayOrigin) / dotND;
-		hit = rayOrigin + t * rayDir;
+		nearestHit = rayOrigin + t * rayDir;
 		return true;		
 	}	
 	return false;
 }
 
 
-bool hitBoundingBox(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-	std::vector<std::vector<std::vector<float>>> mesh, glm::vec3& hit) {
+bool nearestHitBoundingBox(glm::vec3 rayOrigin, glm::vec3 rayDir, 
+	std::vector<std::vector<std::vector<float>>> mesh, glm::vec3& nearestHit) {
 
 	float minX = mesh[0][0][0]; // first triangle, first point, x
 	float minY = mesh[0][0][1];
@@ -195,7 +151,7 @@ bool hitBoundingBox(glm::vec3 rayOrigin, glm::vec3 rayDir,
 }
 
 
-bool hitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
+bool isHitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
 	std::vector<std::vector<float>> triangle, glm::vec3& hitPos, glm::vec3& N) {
 
 	glm::vec3 a = vector_to_vec3(triangle[0]);
@@ -203,9 +159,9 @@ bool hitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
 	glm::vec3 c = vector_to_vec3(triangle[2]);
 
 	N = normalize(cross((b - a),(c - a)));
-	bool isPlaneHit = hitPlane(rayOrigin, rayDir, a, N, hitPos);
+	bool isPlanenearestHit = isHitPlane(rayOrigin, rayDir, a, N, hitPos);
 	
-	if (isPlaneHit) {		
+	if (isPlanenearestHit) {		
 		float axProj = dot(cross((b - a), (hitPos - a)), N);
 		float bxProj = dot(cross((c - b), (hitPos - b)), N);
 		float cxProj = dot(cross((a - c), (hitPos - c)), N);
@@ -249,6 +205,77 @@ glm::vec3 phong( glm::vec3 L, glm::vec3 N, glm::vec3 V,
 }
 
 
+glm::vec3 applyLights(json& object,json& lights, 
+	glm::vec3 N, glm::vec3 pixel, glm::vec3 hitPos) {
+	
+	glm::vec3 V = normalize(pixel - hitPos);
+	glm::vec3 colour;
+
+	// Material
+	json& material = object["material"];	
+
+	glm::vec3 Ka, Kd, Ks;
+	float shininess;
+
+	if (material.find("ambient") != material.end()) {
+		Ka = vector_to_vec3(material["ambient"]);
+	}
+	else {
+		Ka = glm::vec3(0.0, 0.0, 0.0);
+	}
+
+	if (material.find("diffuse") != material.end()) {
+		Kd = vector_to_vec3(material["diffuse"]);
+	}
+	else {
+		Kd = glm::vec3(0.0, 0.0, 0.0);
+	}
+
+	if (material.find("specular") != material.end()) {
+		Ks = vector_to_vec3(material["specular"]);
+	}
+	else {
+		Ks = glm::vec3(0.0, 0.0, 0.0);
+	}
+
+	if (material.find("shininess") != material.end()) {
+		shininess =  material["shininess"];
+	}
+	else {
+		shininess = 0.0;
+	}
+	   
+	// Lights 
+	for (json::iterator it = lights.begin(); it != lights.end(); ++it) {
+		json& light = *it;
+
+		if (light["type"] == "ambient") {
+			glm::vec3 Ia = vector_to_vec3(light["color"]);
+			colour += Ka * Ia;
+		}
+		else if (light["type"] == "point") {
+			glm::vec3 L = normalize(vector_to_vec3(light["position"]) - hitPos);
+			colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+		}
+		else if (light["type"] == "directional") {
+			glm::vec3 L = normalize(-vector_to_vec3(light["direction"]));
+			colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+		}
+		else if (light["type"] == "spot") {
+			glm::vec3 pos = vector_to_vec3(light["position"]);
+			glm::vec3 Dir = normalize(pos - vector_to_vec3(light["direction"]));
+			glm::vec3 L = normalize(pos - hitPos);
+
+			float angle = dot(Dir, L);
+			if (angle < light["cutoff"]) {
+				colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+			}
+		}
+	}
+
+	return colour;
+}
+
 /****************************************************************************/
 
 bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool pick) {
@@ -257,177 +284,76 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 	// NOTE 2: You can work with JSON objects directly (like this sample code), read the JSON objects into your own data structures once and render from those (probably in choose_scene), or hard-code the objects in your own data structures and choose them by name in choose_scene; e.g. choose_scene('e') would pick the same scene as the one in "e.json". Your choice.
 	// If you want to use this JSON library, https://github.com/nlohmann/json for more information. The code below gives examples of everything you should need: getting named values, iterating over arrays, and converting types.
 	
-	glm::vec3 light(5, 10, 2);
-
+	glm::vec3 rayDir = pixel - rayOrigin;
 	bool didHit = false;
-	glm::vec3 firstHit;
-	float firstRayLen = 999;
 
-	// Lights
-	glm::vec3 Ia;
-	std::vector<glm::vec3> PLight_colours;
-	std::vector<glm::vec3> PLight_positions;
+	json& lights = scene["lights"];
+	json& objects = scene["objects"];
 
-	std::vector<glm::vec3> DLight_colours;
-	std::vector<glm::vec3> DLight_directions;
-
-	std::vector<glm::vec3> SLight_colours;
-	std::vector<glm::vec3> SLight_directions;
-	std::vector<glm::vec3> SLight_positions;
-	std::vector<float> SLight_cutoffs;
-
-	// traverse the lights
-	json & lights = scene["lights"];
-	for (json::iterator it = lights.begin(); it != lights.end(); ++it) {
-		json& light = *it;
-		if (light["type"] == "ambient") {
-			Ia = vector_to_vec3(light["color"]);
-		}
-		else if (light["type"] == "point") {
-			PLight_colours.push_back(vector_to_vec3(light["color"]));
-			PLight_positions.push_back(vector_to_vec3(light["position"]));
-		}
-		else if (light["type"] == "directional") {
-			DLight_colours.push_back(vector_to_vec3(light["color"]));
-			DLight_directions.push_back(vector_to_vec3(light["direction"]));
-		}
-		else if (light["type"] == "spot") {
-			SLight_colours.push_back(vector_to_vec3(light["color"]));
-			SLight_directions.push_back(vector_to_vec3(light["direction"]));
-			SLight_positions.push_back(vector_to_vec3(light["position"]));
-			SLight_cutoffs.push_back(light["cutoff"]);
-		}
-	}
-	
-	// traverse the objects
-	json & objects = scene["objects"];
+	// Trying to find the closest object
+	json nearestObj;
+	glm::vec3 nearestHit;
+	glm::vec3 nearestN;
+	float rayLen = 999;	
+		
+	// traverse the objects	
 	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
 		json &object = *it;
 		
 		if (object["type"] == "plane") {
 			glm::vec3 a = vector_to_vec3(object["position"]);
-			glm::vec3 rayDir = pixel - rayOrigin;
 			glm::vec3 N = vector_to_vec3(object["normal"]);
-			glm::vec3 hitPos;
+			glm::vec3 hitPos;			
 
-			bool isHit = hitPlane(rayOrigin, rayDir, a, N, hitPos);
-
-			if (isHit) {
-				float rayLen = glm::length(hitPos-rayOrigin);
-				if (rayLen < firstRayLen) {
-					// Material
-					glm::vec3 Ka = getAmbient(object);
-					glm::vec3 Kd = getDiffuse(object);
-					glm::vec3 Ks = getSpecular(object);
-					float shininess = getShininess(object);
-
-					glm::vec3 V = normalize(pixel - hitPos);
-					colour = Ka * Ia; // ambient component
-
-					// Light
-					for (int i = 0; i < PLight_positions.size(); i++) {
-						glm::vec3 L = normalize(PLight_positions[i] - hitPos);
-						colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
-					}
-
-					firstHit = hitPos; // assuming this is the longest ray possible	
-					firstRayLen = rayLen;					
+			if (isHitPlane(rayOrigin, rayDir, a, N, hitPos)) {
+				float thisRayLen = glm::length(hitPos -rayOrigin);
+				if (thisRayLen < rayLen) {		
+					nearestHit = hitPos; 
+					rayLen = thisRayLen;
+					nearestN = N;
+					nearestObj = object;
 				}
 				didHit = true;
 			}
 		}
-
 		else if (object["type"] == "mesh") {
 	
 			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
-				glm::vec3 rayDir = pixel - rayOrigin;
 				glm::vec3 hitPos;
 				glm::vec3 N;
-				bool isHit = hitTriangle(rayOrigin, rayDir, triangle, hitPos, N);
-				if (isHit) {
-					float rayLen = glm::length(hitPos-rayOrigin);
-					if (rayLen < firstRayLen) {
-						// Material
-						glm::vec3 Ka = getAmbient(object);
-						glm::vec3 Kd = getDiffuse(object);
-						glm::vec3 Ks = getSpecular(object);
-						float shininess = getShininess(object);
-						
-						glm::vec3 V = normalize(pixel - hitPos);
-						colour = Ka * Ia; // ambient component
-
-						// Light
-						for (int i = 0; i < PLight_positions.size(); i++) {
-							glm::vec3 L = normalize(PLight_positions[i] - hitPos);
-							colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
-						}
-						firstHit = hitPos;
-						firstRayLen = rayLen;						
+		
+				if (isHitTriangle(rayOrigin, rayDir, triangle, hitPos, N)) {
+					float thisRayLen = glm::length(hitPos-rayOrigin);
+					if (thisRayLen < rayLen) {		
+						nearestHit = hitPos;
+						rayLen = thisRayLen;		
+						nearestN = N;
+						nearestObj = object;
 					}
 					didHit = true;
 				}
 			}
-		}
-
-		// every object in the scene will have a "type"
+		}	
 		else if (object["type"] == "sphere") {
-			// Every sphere will have a position and a radius
-			std::vector<float> pos = object["position"];
-
-			glm::vec3 c = vector_to_vec3(pos);				
-			glm::vec3 rayDir = pixel - rayOrigin; // from viewer
+			glm::vec3 c = vector_to_vec3(object["position"]);
 			float r = float(object["radius"]);
 
-			glm::vec3 hitPos;								
-			bool isHit = hitSphere(rayOrigin, rayDir, c, r, hitPos);
-
-			if (isHit) {
-				float rayLen = glm::length(hitPos-rayOrigin);
-				if (rayLen < firstRayLen) {
-
-					// Material
-					glm::vec3 Ka = getAmbient(object);
-					glm::vec3 Kd = getDiffuse(object);
-					glm::vec3 Ks = getSpecular(object);
-					float shininess = getShininess(object);		
-
-					glm::vec3 N = normalize(hitPos - c);
-					glm::vec3 V = normalize(pixel - hitPos);
-			
-					colour = Ka * Ia; // ambient component
-					
-					// Point lights
-					for (int i=0; i< PLight_positions.size(); i++) {
-						glm::vec3 L = normalize(PLight_positions[i] - hitPos);
-						colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
-					}
-
-					// Directional lights
-					for (int i = 0; i < DLight_directions.size(); i++) {
-						glm::vec3 L = normalize(-DLight_directions[i]);
-						colour += phong(L, N, V, Kd, Ks, shininess, DLight_colours[0]);
-					}
-
-					// Spot lights
-					for (int i = 0; i < SLight_directions.size(); i++) {
-						glm::vec3 Dir = normalize(SLight_positions[i]-SLight_directions[i]);
-						glm::vec3 L = normalize(SLight_positions[i] - hitPos);
-						
-						float angle = dot(Dir, L);
-						if (angle < SLight_cutoffs[i]) {					
-							colour += phong(L, N, V, Kd, Ks, shininess, SLight_colours[0]);
-						}						
-					}
-
-					firstHit = hitPos;
-					firstRayLen = rayLen;					
+			glm::vec3 hitPos;	
+			if (isHitSphere(rayOrigin, rayDir, c, r, hitPos)) {
+				float thisRayLen = glm::length(hitPos -rayOrigin);
+				if (thisRayLen < rayLen) {
+					glm::vec3 N = normalize(hitPos - c);		
+					nearestN = N;
+					nearestHit = hitPos;
+					rayLen = thisRayLen;		
+					nearestObj = object;
 				}
 				didHit = true;
 			}
 		}		
 	}
-
 	if (didHit) {
+		colour = applyLights(nearestObj, lights, nearestN, pixel, nearestHit);
 		return true;
 	}
 
