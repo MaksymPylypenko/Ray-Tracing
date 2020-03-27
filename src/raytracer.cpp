@@ -250,9 +250,8 @@ glm::vec3 phong( glm::vec3 L, glm::vec3 N, glm::vec3 V,
 
 
 glm::vec3 applyLights(json& object,json& lights, 
-	glm::vec3 N, glm::vec3 rayPixel, glm::vec3 hitPos) {
+	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
 	
-	glm::vec3 V = normalize(rayPixel - hitPos);
 	glm::vec3 colour;
 
 	// Material
@@ -331,14 +330,12 @@ glm::vec3 applyLights(json& object,json& lights,
 
 /****************************************************************************/
 
+bool trace(const point3& rayOrigin, const point3& screenPoint, colour3& colour, bool pick) {
+	glm::vec3 rayDir = screenPoint - rayOrigin;
+	return trace(rayOrigin, rayDir, colour);
+}
 
-bool trace(const point3& rayOrigin, const point3& rayPixel, colour3& colour, bool pick) {
-
-	// JSON library https://github.com/nlohmann/json
-	// The code below gives examples of everything you should need: 
-	// getting named values, iterating over arrays, and converting types.
-
-	glm::vec3 rayDir = rayPixel - rayOrigin;
+bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour) {
 	bool didHit = false;
 
 	json& lights = scene["lights"];
@@ -347,8 +344,7 @@ bool trace(const point3& rayOrigin, const point3& rayPixel, colour3& colour, boo
 	// Trying to find the closest object
 	float rayLen = 999;
 	json hitObj;
-	glm::vec3 hitNormal;
-	
+	glm::vec3 hitNormal;	
 
 	// traverse the objects	
 	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
@@ -400,8 +396,28 @@ bool trace(const point3& rayOrigin, const point3& rayPixel, colour3& colour, boo
 		}
 	}
 	if (didHit) {
-		glm::vec3 hit = rayOrigin + rayLen * rayDir;
-		colour = applyLights(hitObj, lights, hitNormal, rayPixel, hit);
+		glm::vec3 hitPos = rayOrigin + rayLen * rayDir;
+		glm::vec3 V = normalize(-rayDir);
+		
+		json& material = hitObj["material"];
+		if (material.find("reflective") != material.end()) {
+			glm::vec3 reflected = vector_to_vec3(material["reflective"]);
+			glm::vec3 absorbed = glm::vec3(1,1,1) - reflected;			
+			
+			colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
+
+			glm::vec3 R = normalize(2 * dot(hitNormal,V) * hitNormal - V);
+			glm::vec3 rColour;
+			if (trace(hitPos, R, rColour)) {
+				colour += reflected * rColour;
+			}
+			
+		}
+		else {
+			colour = applyLights(hitObj, lights, hitNormal, V, hitPos);
+		}
+
+		
 		return true;
 	}
 
