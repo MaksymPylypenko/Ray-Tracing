@@ -77,7 +77,8 @@ void choose_scene(char const *fn) {
 
 /****************************************************************************/
 
-bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, float radius, glm::vec3& nearestHit) {
+bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, float radius, float &rayLen, 
+	glm::vec3& hit=glm::vec3()) {
 
 	float bSq = pow(dot(rayDir, rayOrigin - sphereCenter), 2);
 	float FourAC = dot(rayDir, rayDir) * dot(rayOrigin - sphereCenter, rayOrigin - sphereCenter) - radius * radius;
@@ -90,41 +91,44 @@ bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter, 
 	float sqrtDisc = sqrt(discriminant);
 	float rest = dot(-rayDir, rayOrigin - sphereCenter) / dot(rayDir, rayDir);
 	
-	float t;
-
 	if (discriminant > 0) {
 		float t1 = rest + sqrtDisc / dot(rayDir, rayDir);
 		float t2 = rest - sqrtDisc / dot(rayDir, rayDir);
-		if (t1 < t2) {
-			t = t1;
-		}
-		else {
-			t = t2;
-		}
+		t1 < t2 ? rayLen = t1: rayLen = t2;		
 	}
 	else {  // discriminant < 0 
-		t = rest;
+		rayLen = rest;
 	}
 
-	nearestHit = rayOrigin + t * rayDir;
+	if (rayLen < 0) {
+		return false;
+	}
+
+	hit = rayOrigin + rayLen * rayDir;
 	return true;
 }
 
+
 /****************************************************************************/
 
-bool isHitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, glm::vec3 N, glm::vec3& nearestHit) {
+bool isHitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, glm::vec3 N, float &rayLen) {
 	float dotND = dot(N, rayDir); // sign tells us which side of a plane was nearestHit
 	if (dotND < 0) {
-		float t = dot(N, planePos - rayOrigin) / dotND;
-		nearestHit = rayOrigin + t * rayDir;
+		rayLen = dot(N, planePos - rayOrigin) / dotND;
+
+		if (rayLen < 0.0001) {
+			return false;
+		}
 		return true;		
 	}	
 	return false;
 }
 
 
-bool nearestHitBoundingBox(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-	std::vector<std::vector<std::vector<float>>> mesh, glm::vec3& nearestHit) {
+/****************************************************************************/
+
+bool isHitMesh(glm::vec3 rayOrigin, glm::vec3 rayDir, 
+	std::vector<std::vector<std::vector<float>>> mesh, glm::vec3& hit) {
 
 	float minX = mesh[0][0][0]; // first triangle, first point, x
 	float minY = mesh[0][0][1];
@@ -152,15 +156,16 @@ bool nearestHitBoundingBox(glm::vec3 rayOrigin, glm::vec3 rayDir,
 
 
 bool isHitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
-	std::vector<std::vector<float>> triangle, glm::vec3& hitPos, glm::vec3& N) {
+	std::vector<std::vector<float>> triangle, glm::vec3& N, float& rayLen) {
 
 	glm::vec3 a = vector_to_vec3(triangle[0]);
 	glm::vec3 b = vector_to_vec3(triangle[1]);
 	glm::vec3 c = vector_to_vec3(triangle[2]);
 
 	N = normalize(cross((b - a),(c - a)));
-	bool isPlanenearestHit = isHitPlane(rayOrigin, rayDir, a, N, hitPos);
-	
+	bool isPlanenearestHit = isHitPlane(rayOrigin, rayDir, a, N, rayLen);
+	glm::vec3 hitPos = rayOrigin + rayLen * rayDir;
+
 	if (isPlanenearestHit) {		
 		float axProj = dot(cross((b - a), (hitPos - a)), N);
 		float bxProj = dot(cross((c - b), (hitPos - b)), N);
@@ -170,6 +175,49 @@ bool isHitTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir,
 			return true;
 		}	
 	}	
+	return false;
+}
+
+/****************************************************************************/
+
+bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir) {
+	json& objects = scene["objects"];
+	   
+	// traverse the objects	
+	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
+		json& object = *it;
+
+
+		//if (object["type"] == "plane") {
+		//	glm::vec3 a = vector_to_vec3(object["position"]);
+		//	glm::vec3 N = vector_to_vec3(object["normal"]);
+
+		//	float rayLen;
+		//	if (isHitPlane(rayOrigin, rayDir, a, N, rayLen)) {
+		//		return true;
+		//	}
+
+		//	//you might be detecting the plane behind the point light
+
+		//}
+		if (object["type"] == "mesh") {
+			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
+				glm::vec3 N; // not used
+				float rayLen; // not used
+				if (isHitTriangle(rayOrigin, rayDir, triangle, N, rayLen)) {
+					return true;
+				}
+			}
+		}
+		if (object["type"] == "sphere") {
+			glm::vec3 c = vector_to_vec3(object["position"]);
+			float r = float(object["radius"]);
+			float rayLen; // not used
+			if (isHitSphere(rayOrigin, rayDir, c, r, rayLen)) {
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
@@ -206,9 +254,9 @@ glm::vec3 phong( glm::vec3 L, glm::vec3 N, glm::vec3 V,
 
 
 glm::vec3 applyLights(json& object,json& lights, 
-	glm::vec3 N, glm::vec3 pixel, glm::vec3 hitPos) {
+	glm::vec3 N, glm::vec3 rayPixel, glm::vec3 hitPos) {
 	
-	glm::vec3 V = normalize(pixel - hitPos);
+	glm::vec3 V = normalize(rayPixel - hitPos);
 	glm::vec3 colour;
 
 	// Material
@@ -255,20 +303,28 @@ glm::vec3 applyLights(json& object,json& lights,
 		}
 		else if (light["type"] == "point") {
 			glm::vec3 L = normalize(vector_to_vec3(light["position"]) - hitPos);
-			colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+
+			if (!isShadow(hitPos, L)) {
+				colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+			}			
 		}
 		else if (light["type"] == "directional") {
-			glm::vec3 L = normalize(-vector_to_vec3(light["direction"]));
-			colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+			glm::vec3 L = -vector_to_vec3(light["direction"]);
+			if (!isShadow(hitPos, L)) {
+				colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+			}
 		}
 		else if (light["type"] == "spot") {
 			glm::vec3 pos = vector_to_vec3(light["position"]);
 			glm::vec3 Dir = normalize(pos - vector_to_vec3(light["direction"]));
 			glm::vec3 L = normalize(pos - hitPos);
 
+			//float angle = acos(dot(Dir, L));
 			float angle = dot(Dir, L);
-			if (angle < light["cutoff"]) {
-				colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+			if (angle <= light["cutoff"]) {
+				if (!isShadow(hitPos, L)) {
+					colour += phong(L, N, V, Kd, Ks, shininess, vector_to_vec3(light["color"]));
+				}
 			}
 		}
 	}
@@ -278,84 +334,82 @@ glm::vec3 applyLights(json& object,json& lights,
 
 /****************************************************************************/
 
-bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool pick) {
 
-	// NOTE 1: This is a demo, not ray tracing code! You will need to replace all of this with your own code...
-	// NOTE 2: You can work with JSON objects directly (like this sample code), read the JSON objects into your own data structures once and render from those (probably in choose_scene), or hard-code the objects in your own data structures and choose them by name in choose_scene; e.g. choose_scene('e') would pick the same scene as the one in "e.json". Your choice.
-	// If you want to use this JSON library, https://github.com/nlohmann/json for more information. The code below gives examples of everything you should need: getting named values, iterating over arrays, and converting types.
-	
-	glm::vec3 rayDir = pixel - rayOrigin;
+bool trace(const point3& rayOrigin, const point3& rayPixel, colour3& colour, bool pick) {
+
+	// JSON library https://github.com/nlohmann/json
+	// The code below gives examples of everything you should need: 
+	// getting named values, iterating over arrays, and converting types.
+
+	glm::vec3 rayDir = rayPixel - rayOrigin;
 	bool didHit = false;
 
 	json& lights = scene["lights"];
 	json& objects = scene["objects"];
 
 	// Trying to find the closest object
-	json nearestObj;
-	glm::vec3 nearestHit;
-	glm::vec3 nearestN;
-	float rayLen = 999;	
-		
+	float rayLen = 999;
+	json hitObj;
+	glm::vec3 hitNormal;
+	
+
 	// traverse the objects	
 	for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
-		json &object = *it;
-		
+		json& object = *it;
+
 		if (object["type"] == "plane") {
 			glm::vec3 a = vector_to_vec3(object["position"]);
-			glm::vec3 N = vector_to_vec3(object["normal"]);
-			glm::vec3 hitPos;			
+			glm::vec3 N = vector_to_vec3(object["normal"]);			
+			float length;
 
-			if (isHitPlane(rayOrigin, rayDir, a, N, hitPos)) {
-				float thisRayLen = glm::length(hitPos -rayOrigin);
-				if (thisRayLen < rayLen) {		
-					nearestHit = hitPos; 
-					rayLen = thisRayLen;
-					nearestN = N;
-					nearestObj = object;
+			if (isHitPlane(rayOrigin, rayDir, a, N, length)) {
+				if (length < rayLen) {
+					rayLen = length;
+					hitNormal = N;
+					hitObj = object;
 				}
 				didHit = true;
 			}
 		}
 		else if (object["type"] == "mesh") {
-	
-			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
-				glm::vec3 hitPos;
+
+			for (std::vector<std::vector<float>> triangle : object["triangles"]) {				
 				glm::vec3 N;
-		
-				if (isHitTriangle(rayOrigin, rayDir, triangle, hitPos, N)) {
-					float thisRayLen = glm::length(hitPos-rayOrigin);
-					if (thisRayLen < rayLen) {		
-						nearestHit = hitPos;
-						rayLen = thisRayLen;		
-						nearestN = N;
-						nearestObj = object;
+				float length;
+
+				if (isHitTriangle(rayOrigin, rayDir, triangle, N, length)) {					
+					if (length < rayLen) {
+						rayLen = length;
+						hitNormal = N;
+						hitObj = object;
 					}
 					didHit = true;
 				}
 			}
-		}	
+		}
 		else if (object["type"] == "sphere") {
 			glm::vec3 c = vector_to_vec3(object["position"]);
 			float r = float(object["radius"]);
-
-			glm::vec3 hitPos;	
-			if (isHitSphere(rayOrigin, rayDir, c, r, hitPos)) {
-				float thisRayLen = glm::length(hitPos -rayOrigin);
-				if (thisRayLen < rayLen) {
-					glm::vec3 N = normalize(hitPos - c);		
-					nearestN = N;
-					nearestHit = hitPos;
-					rayLen = thisRayLen;		
-					nearestObj = object;
+			float t;
+			float length;
+			if (isHitSphere(rayOrigin, rayDir, c, r, length)) {				
+				if (length < rayLen) {
+					rayLen = length;
+					glm::vec3 hit = rayOrigin + rayLen * rayDir;
+					hitNormal = normalize(hit - c);
+					hitObj = object;
 				}
 				didHit = true;
 			}
-		}		
+		}
 	}
 	if (didHit) {
-		colour = applyLights(nearestObj, lights, nearestN, pixel, nearestHit);
+		glm::vec3 hit = rayOrigin + rayLen * rayDir;
+		colour = applyLights(hitObj, lights, hitNormal, rayPixel, hit);
 		return true;
 	}
 
 	return false;
 }
+
+
