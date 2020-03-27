@@ -268,6 +268,14 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 	std::vector<glm::vec3> PLight_colours;
 	std::vector<glm::vec3> PLight_positions;
 
+	std::vector<glm::vec3> DLight_colours;
+	std::vector<glm::vec3> DLight_directions;
+
+	std::vector<glm::vec3> SLight_colours;
+	std::vector<glm::vec3> SLight_directions;
+	std::vector<glm::vec3> SLight_positions;
+	std::vector<float> SLight_cutoffs;
+
 	// traverse the lights
 	json & lights = scene["lights"];
 	for (json::iterator it = lights.begin(); it != lights.end(); ++it) {
@@ -275,9 +283,19 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 		if (light["type"] == "ambient") {
 			Ia = vector_to_vec3(light["color"]);
 		}
-		if (light["type"] == "point") {
+		else if (light["type"] == "point") {
 			PLight_colours.push_back(vector_to_vec3(light["color"]));
 			PLight_positions.push_back(vector_to_vec3(light["position"]));
+		}
+		else if (light["type"] == "directional") {
+			DLight_colours.push_back(vector_to_vec3(light["color"]));
+			DLight_directions.push_back(vector_to_vec3(light["direction"]));
+		}
+		else if (light["type"] == "spot") {
+			SLight_colours.push_back(vector_to_vec3(light["color"]));
+			SLight_directions.push_back(vector_to_vec3(light["direction"]));
+			SLight_positions.push_back(vector_to_vec3(light["position"]));
+			SLight_cutoffs.push_back(light["cutoff"]);
 		}
 	}
 	
@@ -319,7 +337,7 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 			}
 		}
 
-		if (object["type"] == "mesh") {
+		else if (object["type"] == "mesh") {
 	
 			for (std::vector<std::vector<float>> triangle : object["triangles"]) {
 				glm::vec3 rayDir = pixel - rayOrigin;
@@ -352,7 +370,7 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 		}
 
 		// every object in the scene will have a "type"
-		if (object["type"] == "sphere") {
+		else if (object["type"] == "sphere") {
 			// Every sphere will have a position and a radius
 			std::vector<float> pos = object["position"];
 
@@ -378,10 +396,27 @@ bool trace(const point3 &rayOrigin, const point3 &pixel, colour3 &colour, bool p
 			
 					colour = Ka * Ia; // ambient component
 					
-					// Light
+					// Point lights
 					for (int i=0; i< PLight_positions.size(); i++) {
 						glm::vec3 L = normalize(PLight_positions[i] - hitPos);
 						colour += phong(L, N, V, Kd, Ks, shininess, PLight_colours[0]);
+					}
+
+					// Directional lights
+					for (int i = 0; i < DLight_directions.size(); i++) {
+						glm::vec3 L = normalize(-DLight_directions[i]);
+						colour += phong(L, N, V, Kd, Ks, shininess, DLight_colours[0]);
+					}
+
+					// Spot lights
+					for (int i = 0; i < SLight_directions.size(); i++) {
+						glm::vec3 Dir = normalize(SLight_positions[i]-SLight_directions[i]);
+						glm::vec3 L = normalize(SLight_positions[i] - hitPos);
+						
+						float angle = dot(Dir, L);
+						if (angle < SLight_cutoffs[i]) {					
+							colour += phong(L, N, V, Kd, Ks, shininess, SLight_colours[0]);
+						}						
 					}
 
 					firstHit = hitPos;
