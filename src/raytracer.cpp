@@ -100,7 +100,7 @@ bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter,
 		rayLen = rest;
 	}
 
-	if (rayLen < 0.0001 || rayLen > maxRayLen) {
+	if (rayLen < 0.001 || rayLen > maxRayLen) {
 		return false;
 	}
 	return true;
@@ -116,7 +116,7 @@ bool isHitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos,
 	if (dotND < 0) {
 		rayLen = dot(N, planePos - rayOrigin) / dotND;
 
-		if (rayLen < 0.0001 || rayLen > maxRayLen) {
+		if (rayLen < 0.001 || rayLen > maxRayLen) {
 			return false;
 		}
 		return true;		
@@ -333,7 +333,7 @@ glm::vec3 applyLights(json& object,json& lights,
 bool trace(const point3& rayOrigin, const point3& screenPoint, colour3& colour, bool pick) {
 	glm::vec3 rayDir = screenPoint - rayOrigin;
 
-	int bounces = 4;
+	int bounces = 5;
 	return trace(rayOrigin, rayDir, colour, bounces);
 }
 
@@ -354,7 +354,7 @@ bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLe
 
 		if (object["type"] == "plane") {
 			glm::vec3 a = vector_to_vec3(object["position"]);
-			glm::vec3 N = vector_to_vec3(object["normal"]);			
+			glm::vec3 N = normalize(vector_to_vec3(object["normal"]));			
 			float length;
 
 			if (isHitPlane(rayOrigin, rayDir, a, N, length)) {
@@ -402,10 +402,9 @@ bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLe
 		glm::vec3 V = -normalize(rayDir);
 		
 		json& material = hitObj["material"];
-
-
-		
-		if (material.find("transmissive") != material.end()) {			
+			   		
+		if (material.find("transmissive") != material.end()) {
+			// some lights goes through the object
 			glm::vec3 transmitted = vector_to_vec3(material["transmissive"]);
 			glm::vec3 absorbed = glm::vec3(1, 1, 1) - transmitted;
 			colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
@@ -434,12 +433,13 @@ bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLe
 				colour += transmitted * tColour;
 			}			
 		}
-		else { // Absorption everything
+		else { // absorp everything
 			colour = applyLights(hitObj, lights, hitNormal, V, hitPos);
 		}
 
-		// If reflective, then bounce a ray and return some % of the final color
+		
 		if (material.find("reflective") != material.end()) {
+			// bounce a ray and return some % of the final color
 			if (bouncesLeft > 0) {
 				glm::vec3 reflected = vector_to_vec3(material["reflective"]);	
 				glm::vec3 R = normalize(2 * dot(hitNormal, V) * hitNormal - V);
