@@ -111,6 +111,7 @@ bool isHitSphere(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 sphereCenter,
 
 bool isHitPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePos, 
 	glm::vec3 N, float &rayLen, float maxRayLen = 999) {
+
 	float dotND = dot(N, rayDir); // sign tells us which side of a plane was hit
 	if (dotND < 0) {
 		rayLen = dot(N, planePos - rayOrigin) / dotND;
@@ -225,8 +226,7 @@ glm::vec3 phong( glm::vec3 L, glm::vec3 N, glm::vec3 V,
 	glm::vec3 Ks = glm::vec3(0.0, 0.0, 0.0), // material specular
 	float shininess = 0.0,	// material
 	glm::vec3 Ids = glm::vec3(0.0, 0.0, 0.0)) // light diffuse or ligth specular ..oh well, ok
-{
-	
+{	
 	float dotLN = glm::dot(L, N);
 	if (dotLN < 0) { // light does not reach the object					
 		Kd = glm::vec3(0.0, 0.0, 0.0);
@@ -332,7 +332,7 @@ glm::vec3 applyLights(json& object,json& lights,
 
 bool trace(const point3& rayOrigin, const point3& screenPoint, colour3& colour, bool pick) {
 	glm::vec3 rayDir = screenPoint - rayOrigin;
-	return trace(rayOrigin, rayDir, colour, 10);
+	return trace(rayOrigin, rayDir, colour, 4);
 }
 
 bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour, int bouncesLeft) {
@@ -400,6 +400,8 @@ bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour, int b
 		glm::vec3 V = normalize(-rayDir);
 		
 		json& material = hitObj["material"];
+
+		
 		if (material.find("reflective") != material.end()) {
 			if (bouncesLeft > 0) {
 				glm::vec3 reflected = vector_to_vec3(material["reflective"]);
@@ -411,6 +413,16 @@ bool trace(const point3& rayOrigin, const point3& rayDir, colour3& colour, int b
 				if (trace(hitPos, R, rColour, bouncesLeft - 1)) {
 					colour += reflected * rColour;
 				}
+			}			
+		}
+		else if (material.find("transmissive") != material.end()) {
+			glm::vec3 transmitted = vector_to_vec3(material["transmissive"]);
+			glm::vec3 absorbed = glm::vec3(1, 1, 1) - transmitted;
+			colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
+						
+			glm::vec3 tColour;
+			if (trace(hitPos, rayDir, tColour, bouncesLeft)) {
+				colour += transmitted * tColour;
 			}			
 		}
 		else {
