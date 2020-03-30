@@ -328,17 +328,32 @@ glm::vec3 applyLights(json& object,json& lights,
 	return colour;
 }
 
+glm::vec3 reflectRay(glm::vec3 hitPos, glm::vec3 N,
+	glm::vec3 V, int bouncesLeft, float medium) {
+	if (bouncesLeft > 0) {
+		//N = normalize(N);
+		glm::vec3 R = normalize(2 * dot(N, V) * N - V);	
+		return trace(hitPos, R, bouncesLeft - 1, medium);		
+	}
+	return glm::vec3(0, 0, 0);
+}
+
 /****************************************************************************/
 
-bool trace(const point3& rayOrigin, const point3& screenPoint, colour3& colour, bool pick) {
+bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour, bool pick) {
 	glm::vec3 rayDir = screenPoint - rayOrigin;
 
 	int bounces = 5;
-	return trace(rayOrigin, rayDir, colour, bounces);
+	float vacuum = 1.0;
+	colour = trace(rayOrigin, rayDir, bounces, vacuum);
+
+	return colour != glm::vec3(0, 0, 0);
 }
 
-bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLeft, float refrIndex) {
+glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, float medium) {
 	bool didHit = false;
+
+	glm::vec3 colour(0, 0, 0);
 
 	json& lights = scene["lights"];
 	json& objects = scene["objects"];
@@ -400,83 +415,58 @@ bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLe
 	if (didHit) {
 		glm::vec3 hitPos = rayOrigin + rayLen * rayDir;
 		glm::vec3 V = -normalize(rayDir);
+		hitNormal = normalize(hitNormal);
 		
-		json& material = hitObj["material"];
-		bool internalReflection = false;
-
-		if (material.find("transmissive") != material.end()) {
-			// some lights goes through the object
+		json& material = hitObj["material"];	
+	
+		if (material.find("transmissive") == material.end()) { // absorb everything			
+			colour = applyLights(hitObj, lights, hitNormal, V, hitPos);					
+		}
+		else { // absorb some portion of a light			
 			glm::vec3 transmitted = vector_to_vec3(material["transmissive"]);
 			glm::vec3 absorbed = glm::vec3(1, 1, 1) - transmitted;
 			colour = absorbed * applyLights(hitObj, lights, hitNormal, V, hitPos);
-					   
-			
-			if (material.find("refraction") != material.end()) {
-				float refrIndex2 = material["refraction"];
 
-				
-				if (refrIndex != 1) { // if we are not in the vacum we are inside an object
-					refrIndex2 = 1; // not correct for objects inside other objects
-				}					
-				
-				float divided = (refrIndex * refrIndex) / (refrIndex2 * refrIndex2);
+			if (material.find("refraction") == material.end()) { // cast a ray in the same direction				
+				colour += transmitted * trace(hitPos, rayDir, bouncesLeft, medium);
+			}
+			else { // cast a ray in a different direction	
+				float medium2 = material["refraction"];
+
+				if (medium == medium2) { // we are inside an object
+					medium2 = 1.0; // assume that the outside medium is vacum
+					hitNormal = -hitNormal;
+					// not correct for objects inside other objects
+					// not correct for reflections inside an object 
+					// not correct for planes...
+				}
+
+				float coef = medium / medium2;
+				float coefSq = coef * coef;
 				float dotVN = dot(V, hitNormal);
 				float dotVNSq = dotVN * dotVN;
+				float insideSqRoot = 1 - coefSq * (1 - dotVNSq);
 
-				float insideSqRoot = 1 - divided * (1 - dotVNSq);
-
-				if (insideSqRoot<=0) {
-					internalReflection = true;
+				if (insideSqRoot < 0) { // total internal reflection
+					//colour += transmitted * reflectRay(hitPos, hitNormal, V, bouncesLeft, medium);
 				}
-				else {
-					glm::vec3 Vr = refrIndex * (V - hitNormal * dotVN) / refrIndex2;
-					Vr -= hitNormal * sqrt(insideSqRoot);
-
-					rayDir = Vr;
-					refrIndex = refrIndex2;
-				}				
-			}	
-
-			
-			if (!internalReflection) {
-				glm::vec3 tColour;
-				if (trace(hitPos, rayDir, tColour, bouncesLeft, refrIndex)) {
-					colour += transmitted * tColour;
+				else { // refraction
+					glm::vec3 Vr = coef * (V - hitNormal * dotVN) - hitNormal * sqrt(insideSqRoot);
+					colour += transmitted * trace(hitPos, Vr, bouncesLeft, medium2);
 				}
 			}
-				
-		}
-		else { // absorp everything
-			colour = applyLights(hitObj, lights, hitNormal, V, hitPos);
-			if (internalReflection) {
-				if (bouncesLeft > 0) {
-					glm::vec3 reflected = vector_to_vec3(material["reflective"]);
-					glm::vec3 R = normalize(2 * dot(hitNormal, V) * hitNormal - V);
-					glm::vec3 rColour;
-					if (trace(hitPos, R, rColour, bouncesLeft - 1, refrIndex)) {
-						colour += reflected * rColour;
-					}
-				}
-			}
-		}
-
+		}					
 		
 		if (material.find("reflective") != material.end()) {
-			// bounce a ray and return some % of the final color
-			if (bouncesLeft > 0) {
-				glm::vec3 reflected = vector_to_vec3(material["reflective"]);	
-				glm::vec3 R = normalize(2 * dot(hitNormal, V) * hitNormal - V);
-				glm::vec3 rColour;
-				if (trace(hitPos, R, rColour, bouncesLeft - 1, refrIndex)) {
-					colour += reflected * rColour;
-				}
-			}
-		}
-		
-		return true;
+			glm::vec3 reflected = vector_to_vec3(material["reflective"]);	
+			colour += reflected * reflectRay(hitPos, hitNormal,V,bouncesLeft,medium);
+		}		
+	}
+	else {
+		colour = background_colour;
 	}
 
-	return false;
+	return colour;
 }
 
 

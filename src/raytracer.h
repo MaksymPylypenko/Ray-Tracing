@@ -8,5 +8,5 @@ extern colour3 background_colour;
 
 void choose_scene(char const *fn);
 
-bool trace(glm::vec3 rayOrigin, glm::vec3 rayDir, colour3& colour, int bouncesLeft, float refrIndex = 1);
-bool trace(const point3 & rayOrigin, const point3 &screenPoint, colour3 &colour, bool pick);
+glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, float medium);
+bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour, bool pick);
