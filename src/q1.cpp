@@ -44,6 +44,7 @@ point3 s(int x, int y) {
 // OpenGL initialization
 void init(char *fn) {
 	choose_scene(fn);
+	jsonImport(); // Importing to my own data structure!
    
 	// Create a vertex array object
 	GLuint vao;

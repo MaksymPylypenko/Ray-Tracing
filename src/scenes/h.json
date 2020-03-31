@@ -13,7 +13,7 @@
         "ambient":      [0.133, 0.333, 0.133],
         "diffuse":      [0.4, 1, 0.4],
         "specular":     [0.3, 0.3, 0.3],
-        "shininess":    75,
+        "shininess": 75,
         "reflective":   [0.5, 0.5, 0.5],
         "transmissive": [0.5, 0.5, 0.5],
         "refraction":   1.77
