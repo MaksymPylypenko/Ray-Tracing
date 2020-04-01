@@ -2,14 +2,14 @@
 * Author: Maksym Pylypenko
 * Email: pylypenm@myumanitoba.ca
 
-## Controls
-
-Implemented features:
-* Sphere collision checker
-
+## Implemented features:
+* Phong shading
+* Reflection, refraction, transmission
+* Light sources: ambient, point, direction, spot
+* Hit testing for: spheres, triangles, planes
+* Shadows
 
 ## Notes
-
 The program was successfully tested using:
 * OS: Windows 10 using 
 * IDE: Visual Studio 2019 16.4
