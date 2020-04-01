@@ -207,7 +207,7 @@ glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta) {
 	float dotIN = dot(I, N);
 	float k = 1 - eta * eta * (1 - dotIN * dotIN);
 
-	if (k < 0.0001) { 
+	if (k < 0) { 
 		// total internal reflection	
 		return glm::vec3(0, 0, 0);
 	}
