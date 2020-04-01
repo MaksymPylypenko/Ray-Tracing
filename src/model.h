@@ -24,7 +24,7 @@ public:
 	float shininess;
 	glm::vec3 transmission;
 	glm::vec3 reflection;
-	float medium;	   		
+	float refraction;
 };
 
 

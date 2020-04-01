@@ -31,7 +31,7 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		return false;
 	}
 		
-	normal = (rayOrigin + rayDir * rayLen) - center;
+	normal = normalize((rayOrigin + rayDir * rayLen) - center);
 
 	return true;
 }
@@ -124,7 +124,7 @@ glm::vec3 phong(glm::vec3 L, glm::vec3 N, glm::vec3 V,
 	}
 	else {
 		Kd *= dotLN;
-		//if (nonZero(Ks)) { // only calculate this for non-zero specular component
+		if (Ks != glm::vec3(0.0,0.0,0.0)) { // only calculate this for non-zero specular component
 			glm::vec3 R = normalize(2 * dotLN * N - L);
 			float dotRV = dot(R, V);
 			if (dotRV < 0) { // viewer doesn't see the bright spot
@@ -133,7 +133,7 @@ glm::vec3 phong(glm::vec3 L, glm::vec3 N, glm::vec3 V,
 			else {
 				Ks *= glm::pow(dotRV, shininess);
 			}
-		//}
+		}
 	}
 	return Kd * Ids + Ks * Ids;
 }
