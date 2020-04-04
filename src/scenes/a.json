@@ -1,0 +1,94 @@
+{
+  "camera": {
+    "field":      30,
+    "background": [0, 0, 0]
+  },
+    "objects": [
+        {
+            "comment": "Big ball",
+            "type": "sphere",
+            "radius": 1.0,
+            "position": [ 0.0, -1.0, -10.0 ],
+            "material": {
+                "ambient": [ 0.2, 0.0, 0.0 ],
+                "diffuse": [ 0.6, 0.0, 0.0 ],
+                "specular": [ 0.7, 0.6, 0.6 ],
+                "shininess": 25,
+                "reflective": [ 0.5, 0.5, 0.5 ]
+            }
+        },
+        {
+            "comment": "Bot",
+            "type": "plane",
+            "position": [ 0, -2.0, 0.0 ],
+            "normal": [ 0, 1, 0 ],
+            "material": {
+                "diffuse": [ 0.11, 0.11, 0.11 ]
+            }
+        },
+        {
+            "comment": "Top",
+            "type": "plane",
+            "position": [ 0, 4.0, 0.0 ],
+            "normal": [ 0, -1, 0 ],
+            "material": {
+                "diffuse": [ 0.11, 0.11, 0.11 ]
+            }
+        },
+        {
+            "comment": "Front mirror",
+            "type": "plane",
+            "position": [ 0.0, 0.0, -30.0 ],
+            "normal": [ 0.0, 0.0, 1.0 ],
+            "material": {
+                "diffuse": [ 0.1, 0.1, 0.1 ],
+                "reflective": [ 0.5, 0.5, 0.5 ]
+            }
+        },
+        {
+            "comment": "Back mirror",
+            "type": "plane",
+            "position": [ 0.0, 0.0, 1.0 ],
+            "normal": [ 0.0, 0.0, -1.0 ],
+            "material": {
+                "diffuse": [ 1.0, 1.0, 1.0 ],
+                "reflective": [ 0.5, 0.5, 0.5 ]
+            }
+        },
+        {
+            "comment": "Left mirror",
+            "type": "plane",
+            "position": [ -2.0, 0.0, 0.0 ],
+            "normal": [ 1.0, 0.0, 0.0 ],
+            "material": {
+                "diffuse": [ 0.1, 0.1, 0.5 ],
+                "specular": [ 0.1, 0.1, 0.1 ],
+                "shininess": 25,
+                "reflective": [ 0.5, 0.5, 0.5 ]
+            }
+        },
+        {
+            "comment": "Right mirror",
+            "type": "plane",
+            "position": [ 2.0, 0.0, 0.0 ],
+            "normal": [ -1.0, 0.0, 0.0 ],
+            "material": {
+                "diffuse": [ 0.5, 0.1, 0.5 ],
+                "specular": [ 0.1, 0.1, 0.1 ],
+                "shininess": 25,
+                "reflective": [ 0.5, 0.5, 0.5 ]
+            }
+        }
+    ],
+  "lights": [
+    {
+      "type":  "ambient",
+      "color": [0.1, 0.1, 0.1]
+    },
+    {
+        "type": "point",
+        "color": [ 0.8, 0.8, 0.8 ],
+        "position": [ 1.0, 3.0, 0.0 ]
+    }
+  ]
+}
