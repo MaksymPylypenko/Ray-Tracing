@@ -2,6 +2,10 @@
 * Author: Maksym Pylypenko
 * Email: pylypenm@myumanitoba.ca
 
+![Image](https://github.com/MaksymPylypenko/Ray-Tracing/blob/master/rendered/a.png)
+
+![Image](https://github.com/MaksymPylypenko/Ray-Tracing/blob/master/rendered/b.png)
+
 ## Implemented features:
 * Phong shading
 * Reflection, refraction, transmission
