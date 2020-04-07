@@ -34,20 +34,20 @@ public:
 	glm::vec3 normal;
 	float rayLen;
 
-	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen);
+	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside = false);
 };
 
 class Sphere : public Object {
 public:
 	glm::vec3 center;
 	float radius;
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) override;
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside = false) override;
 };
 
 class Plane : public Object {
 public:
 	glm::vec3 position;
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) override;
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside = false) override;
 };
 
 
@@ -56,7 +56,7 @@ public:
 	glm::vec3 a;
 	glm::vec3 b;
 	glm::vec3 c;
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) override;
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside = false) override;
 };
 
 

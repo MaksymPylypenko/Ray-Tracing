@@ -30,6 +30,9 @@
     <ClInclude Include="..\src\raytracer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\model.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\raytracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,6 +83,15 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="..\src\scenes\i.json">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\src\scenes\a.json">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\src\scenes\b.json">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\src\scenes\i2.json">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

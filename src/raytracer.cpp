@@ -21,6 +21,9 @@ const char *PATH = "scenes/";
 json scene;
 
 double fov = 60;
+const float MAX_RAY_LEN = 999.0f;
+const float MIN_RAY_LEN = 0.0001f;
+
 colour3 background_colour(0, 0, 0);
 std::vector<Object*> objects;
 std::vector<Light*> lights;
@@ -232,26 +235,21 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 	glm::vec3 colour(0, 0, 0);
 	
 	Object * closest = new Object();
-	closest->rayLen = 999;
+	closest->rayLen = MAX_RAY_LEN;
 
 	// traverse the objects	
 	for (Object * object : objects) {
-		if (object->isHit(rayOrigin, rayDir, 0.0001, 999)) {
+		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, MAX_RAY_LEN, inside)) {
 			if (object->rayLen < closest->rayLen) {
 				closest = object;
 			}
 		}		
 	}
 	
-	if (closest->rayLen != 999) {
+	if (closest->rayLen != MAX_RAY_LEN) {
 		glm::vec3 hitPos = rayOrigin + closest->rayLen * rayDir;
 		glm::vec3 V = -rayDir;
-		glm::vec3 N = closest->normal;
-
-		if (inside) {
-			N = -N;
-		}
-				
+		glm::vec3 N = closest->normal;				
 		Material * material = closest->material;	
 	
 		if (material->transmission == glm::vec3(0,0,0)) { // absorb everything			
@@ -259,13 +257,15 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 		}
 		else { // absorb some portion of a light			
 
-			glm::vec3 absorbed = glm::vec3(1, 1, 1) - material->transmission;
-			colour = absorbed * applyLights(material, N, V, hitPos);	
+			if (!inside) { // don't want to trap light inside...
+				glm::vec3 absorbed = 1.0f - material->transmission;
+				colour = absorbed * applyLights(material, N, V, hitPos);
+			}				
 
 			if (material->refraction != 0.0) { 
 				// Doesnt work if an object is inside another object... 
 				float eta;
-				inside == true ? eta = 1.0 / material->refraction : eta = material->refraction;			
+				inside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
 				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta);
 				colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside);
 			}	
@@ -275,7 +275,7 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 		}				
 		
 		if (material->reflection != glm::vec3(0,0,0)) {
-			if (bouncesLeft > 0) {
+			if (bouncesLeft > 0 && !inside) {
 				glm::vec3 reflDir = reflectRay(hitPos, N, V);
 				colour += material->reflection * trace(hitPos, reflDir, bouncesLeft-1, inside);
 			}

@@ -1,11 +1,11 @@
 #include "common.h"
 #include "model.h"
 
-bool Object::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) {
+bool Object::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 	return false;
 }
 
-bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) {
+bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 
 	float bSq = pow(dot(rayDir, rayOrigin - center), 2);
 	float FourAC = dot(rayDir, rayDir) * dot(rayOrigin - center, rayOrigin - center) - radius * radius;
@@ -21,7 +21,13 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	if (discriminant > 0) {
 		float t1 = rest + sqrtDisc / dot(rayDir, rayDir);
 		float t2 = rest - sqrtDisc / dot(rayDir, rayDir);
-		t1 < t2 ? rayLen = t1 : rayLen = t2;
+		if(inside){
+			t1 > t2 ? rayLen = t1 : rayLen = t2;
+		}
+		else {
+			t1 < t2 ? rayLen = t1 : rayLen = t2;
+		}
+		
 	}
 	else {  // discriminant < 0 
 		rayLen = rest;
@@ -32,30 +38,36 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	}
 		
 	normal = normalize((rayOrigin + rayDir * rayLen) - center);
+	if (inside) {
+		normal = -normal;
+	}
 
 	return true;
 }
 
 
-bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) {
+bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {	
+	
+	float dotND = dot(normal, rayDir);
 
-	float dotND = dot(normal, rayDir); // sign tells us which side of a plane was hit
+	// Assuming that the plane hit is always outside the surface
 	if (dotND < 0) {
 		rayLen = dot(normal, position - rayOrigin) / dotND;
 
-		if (rayLen < minRayLen || rayLen > maxRayLen) {
+		if (rayLen <= minRayLen || rayLen > maxRayLen) {
 			return false;
-		}
+		}	
 		return true;
 	}
 	return false;
 }
 
-bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen) {
+bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 
 	Plane * plane = new Plane();
 	plane->position = a;
-	plane->normal = normalize(cross((b - a), (c - a)));
+	glm::vec3 N = normalize(cross((b - a), (c - a)));
+	inside == true ? plane->normal = -N : plane->normal = N;
 	   
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
