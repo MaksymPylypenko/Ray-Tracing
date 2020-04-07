@@ -118,7 +118,7 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 
 bool isShadow(std::vector<Object*> &objects, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
 	for (Object* object : objects) {
-		if (object->isHit(rayOrigin, rayDir, 0.0001, maxRayLen)) {
+		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen)) {
 			return true;
 		}
 	}

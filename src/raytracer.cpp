@@ -21,8 +21,6 @@ const char *PATH = "scenes/";
 json scene;
 
 double fov = 60;
-const float MAX_RAY_LEN = 999.0f;
-const float MIN_RAY_LEN = 0.0001f;
 
 colour3 background_colour(0, 0, 0);
 std::vector<Object*> objects;
@@ -172,7 +170,7 @@ void jsonImport() {
 		else if (light["type"] == "directional") {
 			Directional* directional = new Directional();
 			directional->colour = vector_to_vec3(light["color"]);
-			directional->direction = vector_to_vec3(light["direction"]);	
+			directional->direction = normalize(vector_to_vec3(light["direction"]));
 			lights.push_back(directional);
 		}
 		else if (light["type"] == "spot") {
