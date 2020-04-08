@@ -271,27 +271,30 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 				colour = absorbed * applyLights(material, N, V, hitPos);
 			}				
 
-			if (material->refraction != 0.0) { 
-				if (pick) {
-					if (!inside) {
-						printf("Refracting AIR --> MATERIAL\n\n");
-					}
-					else {					
-						printf("Refracting MATERIAL --> AIR\n\n");
-					}
-					
-				}
+			if (material->refraction != 0.0) { 				
 				// Doesn't work if an object is inside another object... 
 				float eta;
 				inside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
 				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta, inside);
 				if (refrDir == glm::vec3(0, 0, 0)) {
 					if (bouncesLeft > 0) {
+						if (pick) {
+							printf("Total internal reflection ...\n\n");
+						}
 						glm::vec3 internalRefl = reflectRay(hitPos, N, V);
-						colour = trace(hitPos, internalRefl, bouncesLeft-1, inside, pick);
+						colour += trace(hitPos, internalRefl, bouncesLeft-1, inside, pick);
 					}				
 				}
 				else {
+					if (pick) {
+						if (!inside) {
+							printf("Refracting AIR --> MATERIAL\n\n");
+						}
+						else {
+							printf("Refracting MATERIAL --> AIR\n\n");
+						}
+
+					}
 					colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside, pick);
 				}				
 			}	
