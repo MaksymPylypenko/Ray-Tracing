@@ -5,6 +5,10 @@ bool Object::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	return false;
 }
 
+void Object::debug() {	
+	printf("None");	
+}
+
 bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 
 	float bSq = pow(dot(rayDir, rayOrigin - center), 2);
@@ -27,7 +31,6 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		else {
 			t1 < t2 ? rayLen = t1 : rayLen = t2;
 		}
-		
 	}
 	else {  // discriminant < 0 
 		rayLen = rest;
@@ -40,51 +43,68 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	normal = normalize((rayOrigin + rayDir * rayLen) - center);
 	if (inside) {
 		normal = -normal;
-	}
-
+	}	
 	return true;
 }
 
+void Sphere::debug() {
+	printf("Sphere @ RayLen = %f\n", rayLen);
+}
 
-bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {	
+
+bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 	
-	float dotND = dot(normal, rayDir);
 
-	// Assuming that the plane hit is always outside the surface
-	if (dotND < 0) {
+	float dotND = dot(normal, rayDir);
+	
+	// Assuming that the normal is always correct
+	//if ((dotND < 0 && !inside) || (dotND > 0 && inside)) { 
+	if(dotND < 0){
 		rayLen = dot(normal, position - rayOrigin) / dotND;
 
 		if (rayLen <= minRayLen || rayLen > maxRayLen) {
 			return false;
-		}	
+		}			
 		return true;
 	}
 	return false;
 }
 
+void Plane::debug() {
+	printf("Plane @ RayLen = %f\n", rayLen);
+}
+
 bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+
 
 	Plane * plane = new Plane();
 	plane->position = a;
+
 	glm::vec3 N = normalize(cross((b - a), (c - a)));
 	inside == true ? plane->normal = -N : plane->normal = N;
 	   
-	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen)) {
+	plane->normal = normalize(cross((b - a), (c - a)));
+
+	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
 
-		float axProj = dot(cross((b - a), (hitPos - a)), plane->normal);
-		float bxProj = dot(cross((c - b), (hitPos - b)), plane->normal);
-		float cxProj = dot(cross((a - c), (hitPos - c)), plane->normal);
+		bool axProj = dot(cross((b - a), (hitPos - a)), plane->normal) > 0;
+		bool bxProj = dot(cross((c - b), (hitPos - b)), plane->normal) > 0;
+		bool cxProj = dot(cross((a - c), (hitPos - c)), plane->normal) > 0;
 		
-		if (axProj > 0 && bxProj > 0 && cxProj > 0) {			
+		if (axProj && bxProj && cxProj) {
 			normal = plane->normal;
-			rayLen = plane->rayLen;
+			rayLen = plane->rayLen;			
 			delete plane;
 			return true;
 		}
 	}
 	delete plane;
 	return false;
+}
+
+void Triangle::debug() {
+	printf("Triangle @ RayLen = %f\n", rayLen);
 }
 
 
@@ -118,7 +138,7 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 
 bool isShadow(std::vector<Object*> &objects, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
 	for (Object* object : objects) {
-		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen)) {
+		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen, false)) {
 			return true;
 		}
 	}

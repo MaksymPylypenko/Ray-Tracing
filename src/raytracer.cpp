@@ -203,13 +203,17 @@ glm::vec3 reflectRay(glm::vec3 hitPos, glm::vec3 N,	glm::vec3 V) {
 	return normalize(2 * dot(N, V) * N - V); 
 }
 
-glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta) {
+glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta, bool inside) {
 
 	float dotIN = dot(I, N);
 	float k = 1 - eta * eta * (1 - dotIN * dotIN);
 
 	if (k < 0) { 
 		// total internal reflection	
+		if (inside)
+		{
+			reflectRay(hitPos, N, -I);
+		}
 		return glm::vec3(0, 0, 0);
 	}
 	else {
@@ -224,12 +228,12 @@ bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour
 	glm::vec3 rayDir = normalize(screenPoint - rayOrigin);
 
 	int bounces = 5;
-	colour = trace(rayOrigin, rayDir, bounces, false);
+	colour = trace(rayOrigin, rayDir, bounces, false, pick);
 
 	return colour != background_colour;
 }
 
-glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool inside) {
+glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool inside, bool pick) {
 	glm::vec3 colour(0, 0, 0);
 	
 	Object * closest = new Object();
@@ -245,6 +249,11 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 	}
 	
 	if (closest->rayLen != MAX_RAY_LEN) {
+
+		if (pick) {
+			closest->debug();
+		}		
+	
 		glm::vec3 hitPos = rayOrigin + closest->rayLen * rayDir;
 		glm::vec3 V = -rayDir;
 		glm::vec3 N = closest->normal;				
@@ -261,21 +270,33 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 			}				
 
 			if (material->refraction != 0.0) { 
-				// Doesnt work if an object is inside another object... 
+				if (pick) {
+					if (!inside) {
+						printf("Refracting AIR --> MATERIAL\n\n");
+					}
+					else {					
+						printf("Refracting MATERIAL --> AIR\n\n");
+					}
+					
+				}
+				// Doesn't work if an object is inside another object... 
 				float eta;
 				inside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
-				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta);
-				colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside);
+				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta, inside);
+				colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside, pick);
 			}	
 			else {
-				colour += material->transmission * trace(hitPos, rayDir, bouncesLeft, inside);
+				colour += material->transmission * trace(hitPos, rayDir, bouncesLeft, inside, pick);
 			}
 		}				
 		
 		if (material->reflection != glm::vec3(0,0,0)) {
 			if (bouncesLeft > 0 && !inside) {
+				if (pick) {				
+					printf("Reflecting ...\n\n");					
+				}
 				glm::vec3 reflDir = reflectRay(hitPos, N, V);
-				colour += material->reflection * trace(hitPos, reflDir, bouncesLeft-1, inside);
+				colour += material->reflection * trace(hitPos, reflDir, bouncesLeft-1, inside, pick);
 			}
 		}		
 	}

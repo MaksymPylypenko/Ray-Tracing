@@ -9,6 +9,6 @@ extern colour3 background_colour;
 void choose_scene(char const *fn);
 void jsonImport();
 
-glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool inside);
+glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool inside, bool pick = false);
 bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour, bool pick);
 
