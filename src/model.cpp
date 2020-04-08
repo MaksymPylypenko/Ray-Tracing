@@ -57,8 +57,6 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 
 	float dotND = dot(normal, rayDir);
 	
-	// Assuming that the normal is always correct
-	//if ((dotND < 0 && !inside) || (dotND > 0 && inside)) { 
 	if(dotND < 0){
 		rayLen = dot(normal, position - rayOrigin) / dotND;
 
@@ -83,16 +81,24 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	glm::vec3 N = normalize(cross((b - a), (c - a)));
 	inside == true ? plane->normal = -N : plane->normal = N;
 	   
-	plane->normal = normalize(cross((b - a), (c - a)));
 
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
 
-		bool axProj = dot(cross((b - a), (hitPos - a)), plane->normal) > 0;
-		bool bxProj = dot(cross((c - b), (hitPos - b)), plane->normal) > 0;
-		bool cxProj = dot(cross((a - c), (hitPos - c)), plane->normal) > 0;
+		bool axProj = dot(cross((b - a), (hitPos - a)), plane->normal) < 0;
+		bool bxProj = dot(cross((c - b), (hitPos - b)), plane->normal) < 0;
+		bool cxProj = dot(cross((a - c), (hitPos - c)), plane->normal) < 0;
 		
-		if (axProj && bxProj && cxProj) {
+		bool hit;
+		if (inside) {
+			hit = axProj && bxProj && cxProj;
+		}
+		else
+		{
+			hit = !axProj && !bxProj && !cxProj;
+		}
+
+		if (hit) {
 			normal = plane->normal;
 			rayLen = plane->rayLen;			
 			delete plane;

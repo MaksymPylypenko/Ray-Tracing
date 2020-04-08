@@ -109,7 +109,7 @@ main( int argc, char **argv )
 {
    glutInit( &argc, argv );
    glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
-   glutInitWindowSize( 512, 512 );
+   glutInitWindowSize( 640, 640 );
    //glutInitWindowSize(300, 300);
    //glutInitWindowSize(110, 110);
    glutInitContextVersion( 3, 2 );

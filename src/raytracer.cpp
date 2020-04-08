@@ -208,16 +208,17 @@ glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta, bool
 	float dotIN = dot(I, N);
 	float k = 1 - eta * eta * (1 - dotIN * dotIN);
 
-	if (k < 0) { 
-		// total internal reflection	
-		if (inside)
-		{
-			reflectRay(hitPos, N, -I);
+	if (inside) {
+		if (k < 0) {
+			return glm::vec3(0, 0, 0);
 		}
-		return glm::vec3(0, 0, 0);
+		else {
+			return normalize(eta * (I - N * dotIN) - N * sqrt(k));
+		}
 	}
 	else {
-		return normalize(eta * (I - N * dotIN) - N * sqrt(k)); 
+		assert(k > 0);		
+		return normalize(eta * (I - N * dotIN) - N * sqrt(k));				
 	}
 	
 }
@@ -229,6 +230,7 @@ bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour
 
 	int bounces = 5;
 	colour = trace(rayOrigin, rayDir, bounces, false, pick);
+	//colour = trace(rayOrigin, rayDir, bounces, true, pick);
 
 	return colour != background_colour;
 }
@@ -283,7 +285,15 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool ins
 				float eta;
 				inside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
 				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta, inside);
-				colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside, pick);
+				if (refrDir == glm::vec3(0, 0, 0)) {
+					if (bouncesLeft > 0) {
+						glm::vec3 internalRefl = reflectRay(hitPos, N, V);
+						colour = trace(hitPos, internalRefl, bouncesLeft-1, inside, pick);
+					}				
+				}
+				else {
+					colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !inside, pick);
+				}				
 			}	
 			else {
 				colour += material->transmission * trace(hitPos, rayDir, bouncesLeft, inside, pick);

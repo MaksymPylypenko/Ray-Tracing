@@ -17,7 +17,7 @@
 using namespace std;
 
 const float MAX_RAY_LEN = 999.0f;
-const float MIN_RAY_LEN = 0.0001f;
+const float MIN_RAY_LEN = 0.00001f;
 
 class Material {
 public:
