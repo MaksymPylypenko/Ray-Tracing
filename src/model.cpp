@@ -76,18 +76,18 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 
 
 	Plane * plane = new Plane();
-	plane->position = a;
+	plane->position = points[0];
 
-	glm::vec3 N = normalize(cross((b - a), (c - a)));
+	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;
 	   
 
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
 
-		bool axProj = dot(cross((b - a), (hitPos - a)), plane->normal) < 0;
-		bool bxProj = dot(cross((c - b), (hitPos - b)), plane->normal) < 0;
-		bool cxProj = dot(cross((a - c), (hitPos - c)), plane->normal) < 0;
+		bool axProj = dot(cross((points[1] - points[0]), (hitPos - points[0])), plane->normal) < 0;
+		bool bxProj = dot(cross((points[2] - points[1]), (hitPos - points[1])), plane->normal) < 0;
+		bool cxProj = dot(cross((points[0] - points[2]), (hitPos - points[2])), plane->normal) < 0;
 		
 		bool hit;
 		if (inside) {
@@ -114,33 +114,65 @@ void Triangle::debug() {
 }
 
 
-//bool isHitMesh(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-//	std::vector<std::vector<std::vector<float>>> mesh, glm::vec3& hit) {
-//
-//	float minX = mesh[0][0][0]; // first triangle, first point, x
-//	float minY = mesh[0][0][1];
-//	float minZ = mesh[0][0][2];
-//	float maxX = mesh[0][0][0];
-//	float maxY = mesh[0][0][1];
-//	float maxZ = mesh[0][0][2];
-//
-//	for (std::vector<std::vector<float>> triangle :mesh) {
-//		for (std::vector<float> point : triangle) {
-//			glm::vec3 curr = vector_to_vec3(point);
-//			minX = (curr.x < minX ? curr.x : minX);
-//			minY = (curr.y < minY ? curr.y : minY);
-//			minZ = (curr.z < minZ ? curr.z : minZ);
-//			maxX = (curr.x > maxX ? curr.x : maxX);
-//			maxY = (curr.y > maxY ? curr.y : maxY);
-//			maxZ = (curr.z > maxZ ? curr.z : maxZ);			
-//		}
-//	}
-//
-//	// @TODO return true if inside the bounding box
-//
-//	return false;
-//}
+void Mesh:: findSlabs() {
+	// init slabs to the first point in the mesh
+	min = triangles[0]->points[0];
+	max = triangles[0]->points[0];
 
+	for (Triangle * triangle : triangles) {
+		for (glm::vec3 point : triangle->points) {
+			for (int i = 0; i < 3; i++) {
+				if (point[i] < min[i]) {
+					min[i] = point[i];
+				}
+				else if (point[i] > max[i]) {
+					max[i] = point[i];
+				}
+			}		
+		}
+		
+	}
+}
+
+
+bool Mesh :: isHit (glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+	
+	// Optimization of Kay-Kajia https://medium.com/@bromanz/another-view-on-the-classic-ray-aabb-intersection-algorithm-for-bvh-traversal-41125138b525
+
+	glm::vec3 invRayDir = 1.0f / rayDir;
+	glm::vec3 t0 = (min - rayOrigin) * invRayDir;
+	glm::vec3 t1 = (max - rayOrigin) * invRayDir;
+
+	glm::vec3 tmin = glm::min(t0, t1);
+	glm::vec3 tmax = glm::max(t0, t1);
+	   
+	float lowest = glm::max(minRayLen, glm::max(tmin[0], glm::max(tmin[1], tmin[2])));
+	float highest = glm::min(maxRayLen, glm::min(tmax[0], glm::min(tmax[1], tmax[2])));
+
+	if (highest < lowest) {
+		return false;
+	}
+
+	for (Triangle * triangle : triangles) {
+		if (triangle->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
+			material = triangle->material;
+			normal = triangle->normal;
+			rayLen = triangle->rayLen;
+			
+			// This is incorrect, need to hit the closest triangle!
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void Mesh::debug() {
+	printf("Mesh @ RayLen = %f\n", rayLen);
+}
+
+
+/*************************************************************************/
 
 bool isShadow(std::vector<Object*> &objects, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
 	for (Object* object : objects) {

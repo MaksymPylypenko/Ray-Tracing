@@ -138,15 +138,21 @@ void jsonImport() {
 		}
 
 		else if (object["type"] == "mesh") {
+
+			std::vector<Triangle*> triangles;
+
 			for (std::vector<std::vector<float>> triangleJson : object["triangles"]) {
 				Triangle * triangle = new Triangle();
-				triangle->a = vector_to_vec3(triangleJson[0]);
-				triangle->b = vector_to_vec3(triangleJson[1]);
-				triangle->c = vector_to_vec3(triangleJson[2]);
+				triangle->points.push_back(vector_to_vec3(triangleJson[0]));
+				triangle->points.push_back(vector_to_vec3(triangleJson[1]));
+				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
 				triangle->material = material;
-				objects.push_back(triangle);
+				triangles.push_back(triangle);
 			}
-
+			Mesh * mesh = new Mesh();
+			mesh->triangles = triangles;
+			mesh->findSlabs();
+			objects.push_back(mesh);
 		}
 	}
 

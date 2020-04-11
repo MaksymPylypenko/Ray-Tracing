@@ -63,17 +63,29 @@ public:
 };
 
 
+
 class Triangle : public Object {
 public:
-	glm::vec3 a;
-	glm::vec3 b;
-	glm::vec3 c;
+	std::vector<glm::vec3> points;
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
 	void debug() override;
 };
 
+
+class Mesh : public Object {
+public:
+	glm::vec3 min;
+	glm::vec3 max;
+	std::vector<Triangle*> triangles;
+
+	void findSlabs();
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
+		float minRayLen, float maxRayLen, bool inside = false) override;
+
+	void debug() override;
+};
 
 
 class Light {
