@@ -13,6 +13,7 @@
 #include <cstdlib>
 
 #include "model.h"
+#include "light.h"
 
 using json = nlohmann::json;
 
@@ -151,6 +152,9 @@ void jsonImport() {
 			}
 			Mesh * mesh = new Mesh();
 			mesh->triangles = triangles;
+			//mesh->translate(glm::vec3(0.5,0.5,0));
+			//mesh->scale(0.2f);
+			//mesh->rotate(glm::vec3(0,0,1),90, true);
 			mesh->findSlabs();
 
 			BoundingVolume* box = new BoundingVolume();

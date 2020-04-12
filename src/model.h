@@ -4,20 +4,11 @@
 #include "common.h"
 #include "model.h"
 
-#include <glm/glm.hpp>
+#include <glm/glm.hpp>  // glm
+#include <vector>		// std::vector
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <fstream>      // std::ifstream
-#include <vector>		// std::vector
-#include <sstream>      // std::istringstream
-#include <string>       // std::string
-
-using namespace std;
-
-const float MAX_RAY_LEN = 999.0f;
-const float MIN_RAY_LEN = 0.000001f;
 
 /*************************************************************************/
 /* Objects */
@@ -92,6 +83,10 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
+	void translate(glm::vec3 vector);
+	void scale(float scale, bool findOrigin = true);
+	void rotate(glm::vec3 axis, float angle, bool findOrigin = false);
+
 	void debug() override;
 };
 
@@ -107,55 +102,10 @@ public:
 
 	bool isLeave = false;
 
-	bool build(Mesh* mesh, int threshold = 8, int maxDepth = 10, int currDepth = 0);
+	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 10, int currDepth = 0);
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside);
 	void debug();
 };
 
-
-
-/*************************************************************************/
-/* Lighting */
-
-class Light {
-public:
-	virtual glm::vec3 apply(std::vector<Object*> objects, Material * material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
-};
-
-class Ambient : public Light {
-public:
-	glm::vec3 colour;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
-};
-
-class Point : public Light {
-public:
-	glm::vec3 colour;
-	glm::vec3 position;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
-};
-
-class Directional : public Light {
-public:
-	glm::vec3 colour;
-	glm::vec3 direction;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
-};
-
-
-class Spot : public Light {
-public:
-	glm::vec3 colour;
-	glm::vec3 position;
-	glm::vec3 direction;
-	float cutoff;
-
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
-};
 
 #endif model_h
