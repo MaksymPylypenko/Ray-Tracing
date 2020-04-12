@@ -19,6 +19,9 @@ using namespace std;
 const float MAX_RAY_LEN = 999.0f;
 const float MIN_RAY_LEN = 0.000001f;
 
+/*************************************************************************/
+/* Objects */
+
 class Material {
 public:
 	glm::vec3 Ka;
@@ -67,11 +70,15 @@ public:
 class Triangle : public Object {
 public:
 	std::vector<glm::vec3> points;
+	int nodeID; // used for the Octree construction
+	glm::vec3 Triangle::getBarycenter();
+
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
 	void debug() override;
 };
+
 
 
 class Mesh : public Object {
@@ -81,12 +88,34 @@ public:
 	std::vector<Triangle*> triangles;
 
 	void findSlabs();
+
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
 	void debug() override;
 };
 
+/*************************************************************************/
+/* Acceleration */
+
+
+class BoundingVolume : public Object {
+public:
+
+	BoundingVolume* children[8]; // Using Octree to insert BVH nodes by proximity
+	Mesh* mesh;
+
+	bool isLeave = false;
+
+	bool build(Mesh* mesh, int threshold = 8, int maxDepth = 10, int currDepth = 0);
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside);
+	void debug();
+};
+
+
+
+/*************************************************************************/
+/* Lighting */
 
 class Light {
 public:

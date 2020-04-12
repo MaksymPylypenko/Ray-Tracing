@@ -152,7 +152,11 @@ void jsonImport() {
 			Mesh * mesh = new Mesh();
 			mesh->triangles = triangles;
 			mesh->findSlabs();
-			objects.push_back(mesh);
+
+			BoundingVolume* box = new BoundingVolume();
+			box->build(mesh);
+
+			objects.push_back(box);
 		}
 	}
 
