@@ -29,6 +29,7 @@ class Object {
 public:	
 	Material * material;
 	glm::vec3 normal;
+	glm::vec3 origin;
 	float rayLen;
 
 	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
@@ -77,15 +78,18 @@ public:
 	glm::vec3 min;
 	glm::vec3 max;
 	std::vector<Triangle*> triangles;
+	glm::quat q;
 
 	void findSlabs();
+	void resetOrigin();
 
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
 	void translate(glm::vec3 vector);
-	void scale(float scale, bool findOrigin = true);
-	void rotate(glm::vec3 axis, float angle, bool findOrigin = false);
+	void scale(float scale);
+	void addQuaternion(glm::vec3 axis, float angle);
+	void rotate();
 
 	void debug() override;
 };

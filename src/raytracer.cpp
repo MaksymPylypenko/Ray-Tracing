@@ -153,9 +153,13 @@ void jsonImport() {
 			Mesh * mesh = new Mesh();
 			mesh->triangles = triangles;
 			//mesh->translate(glm::vec3(0.5,0.5,0));
-			//mesh->scale(0.2f);
-			//mesh->rotate(glm::vec3(0,0,1),90, true);
-			mesh->findSlabs();
+			mesh->resetOrigin();
+			mesh->scale(0.5f);			
+			
+			mesh->addQuaternion(glm::vec3(0.0, 0.0, 1.0), 90);
+			mesh->addQuaternion(glm::vec3(0.0, 1.0, 0.0), 90);
+			mesh->rotate();
+			//mesh->findSlabs();
 
 			BoundingVolume* box = new BoundingVolume();
 			box->build(mesh);

@@ -170,63 +170,34 @@ void Mesh::translate(glm::vec3 vector) {
 	}
 }
 
-void Mesh::scale(float scale, bool findOrigin) {
+void Mesh::resetOrigin() {
+	findSlabs();
+	origin = (min + max) / 2.0f;
+}
 
-	if (findOrigin) { // Find a current barycenter and make it an origin
-		findSlabs();
-		glm::vec3 origin = (min + max) / 2.0f;
-		for (Triangle* triangle : triangles) {
-			for (int i = 0; i < 3; i++) {
-				glm::vec3 currPos = triangle->points[i] - origin;
-				glm::vec3 newPos = currPos * scale;
-				triangle->points[i]+= newPos-currPos;
-			}
-		}
-	}
-	else { // Assume a correct origin
-		for (Triangle* triangle : triangles) {
-			for (int i = 0; i < 3; i++) {
-				glm::vec3 currPos = triangle->points[i];
-				glm::vec3 newPos = triangle->points[i] *= scale;
-				triangle->points[i] += newPos - currPos;
-			}
+void Mesh::scale(float scale) {		
+	for (Triangle* triangle : triangles) {
+		for (int i = 0; i < 3; i++) {
+			glm::vec3 currPos = triangle->points[i] - origin;
+			glm::vec3 newPos = currPos * scale;
+			triangle->points[i]+= newPos-currPos;
 		}
 	}	
 }
 
 
-void Mesh::rotate(glm::vec3 axis, float angle, bool findOrigin) {	
+void Mesh::addQuaternion(glm::vec3 axis, float angle) {
+	q = glm::rotate(q, angle, normalize(axis));
+}
 
-	// Quaternion math is taken from this tutorial 
-	// https://www.geeks3d.com/20141201/how-to-rotate-a-vertex-by-a-quaternion-in-glsl/
-
-
-	// Finding quaternion component x,y,z,w from [axis] + [angle] 
-	float half_angle = (angle * 0.5) * 3.14159 / 180.0;
-	glm::vec3 xyz = axis * sin(half_angle);	
-	float w = cos(half_angle);
-
-	if (findOrigin) { // Find a current barycenter and make it an origin
-		findSlabs();
-		glm::vec3 origin = (min + max) / 2.0f;
-		for (Triangle* triangle : triangles) {
-			for (int i = 0; i < 3; i++) {
-				glm::vec3 currPos = triangle->points[i] - origin;
-				glm::vec3 newPos = currPos + 2.0f * cross(xyz, cross(xyz, currPos) + w * currPos);
-				triangle->points[i] += newPos - currPos;
-			}
+void Mesh::rotate() {		
+	for (Triangle* triangle : triangles) {
+		for (int i = 0; i < 3; i++) {
+			glm::vec3 currPos = triangle->points[i] - origin;
+			glm::vec3 newPos = currPos * mat3_cast(q);
+			triangle->points[i] += newPos - currPos;
 		}
-	}
-	else {
-		for (Triangle* triangle : triangles) {
-			for (int i = 0; i < 3; i++) {
-				glm::vec3 currPos = triangle->points[i];
-				glm::vec3 newPos = currPos + 2.0f * cross(xyz, cross(xyz, currPos) + w * currPos);
-				triangle->points[i] += newPos - currPos;
-			}
-		}
-	}
-	
+	}	
 }
 
 
@@ -240,9 +211,10 @@ void Mesh::debug() {
 /* Acceleration */
 
 
-bool BoundingVolume::build(Mesh* mesh, int threshold, int maxDepth, int currDepth) {
+bool BoundingVolume::build(Mesh* newMesh, int threshold, int maxDepth, int currDepth) {
 
-	this->mesh = mesh;
+	mesh = newMesh;
+	mesh->resetOrigin();
 
 	// Mesh contains a minimum number of objects, this is a base case.
 	if (mesh->triangles.size() <= threshold || currDepth >= maxDepth)	{
@@ -253,7 +225,6 @@ bool BoundingVolume::build(Mesh* mesh, int threshold, int maxDepth, int currDept
 	   
 	// Else, classify each triangle to 1 of the 8 nodes
 	int nodePointsNum[8] = { 0 };
-	glm::vec3 meshCenter = (mesh->max + mesh->min) * 0.5f;  
 
 	for (Triangle* triangle : mesh->triangles) {
 
@@ -262,13 +233,13 @@ bool BoundingVolume::build(Mesh* mesh, int threshold, int maxDepth, int currDept
 		//printf("Barycenter = %f, %f, %f", triCenter.x, triCenter.y, triCenter.z);
 
 		triangle->nodeID = 0;
-		if (triCenter.x > meshCenter.x) {
+		if (triCenter.x > mesh->origin.x) {
 			triangle->nodeID += 1;
 		}
-		if (triCenter.y > meshCenter.y) {
+		if (triCenter.y > mesh->origin.y) {
 			triangle->nodeID += 2;
 		}
-		if (triCenter.z > meshCenter.z) {
+		if (triCenter.z > mesh->origin.z) {
 			triangle->nodeID += 4;
 		}
 
@@ -292,12 +263,9 @@ bool BoundingVolume::build(Mesh* mesh, int threshold, int maxDepth, int currDept
 
 			Mesh* subMesh = new Mesh();
 			subMesh->triangles = subset;
-			subMesh->findSlabs();
-
 			children[i]->build(subMesh, threshold, maxDepth, currDepth + 1);	
 		}
 	}
-
 	return true;
 }
 
