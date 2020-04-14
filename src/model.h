@@ -46,6 +46,7 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
+	float scale = 12.0;
 	void debug() override;
 };
 
@@ -58,6 +59,7 @@ public:
 
 	glm::vec3 axisU;
 	glm::vec3 axisV;
+	float scale = 1.68;
 	bool allowTexture = false;
 	void alignTextureAxes();
 
@@ -74,7 +76,7 @@ public:
 
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
-
+	   
 	void debug() override;
 };
 

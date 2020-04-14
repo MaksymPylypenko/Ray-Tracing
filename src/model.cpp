@@ -53,7 +53,6 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 
 	glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
 	glm::vec3 point = hitPos- center;
-	float scale = 12.0;
 
 	// polar angle
 	float phi = acosf(point.y / radius);
@@ -118,8 +117,7 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 			glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
 			float u = dot(hitPos, axisU);
 			float v = dot(hitPos, axisV);
-
-			float scale = 1.68;
+			
 			bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
 
 			glm::vec3 colour;
@@ -152,6 +150,10 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;
 	   
+	plane->material = new Material();
+	plane->alignTextureAxes();
+	plane->scale = 10.0;
+
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
 
@@ -168,7 +170,8 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 			hit = axProj>0 && bxProj>0 && cxProj>0;
 		}
 
-		if (hit) {			
+		if (hit) {	
+			material->Ka = plane->material->Ka;
 			normal = plane->normal;
 			rayLen = plane->rayLen;			
 			delete plane;
