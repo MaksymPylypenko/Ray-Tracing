@@ -87,8 +87,18 @@ void Sphere::debug() {
 
 
 void Plane::alignTextureAxes() {	
-	axisU = glm::vec3(normal.y, normal.z, -normal.x);
-	axisV = cross(normal, axisU);
+	// This caused issues with a vertical plane on scene [c]...
+	// axisU = normalize(glm::vec3(normal.y, normal.z, -normal.x));
+
+	// Instead, setting [axisU] to the longest axis
+	glm::vec3 a = cross(normal, glm::vec3(1, 0, 0));
+	glm::vec3 b = cross(normal, glm::vec3(0, 1, 0));
+	glm::vec3 c = cross(normal, glm::vec3(0, 0, 1));
+
+	// Note, the dot product of a vector with itself is the square of its magnitude
+	axisU = dot(a, a) > dot(b, b) ? a : b;
+	axisU = normalize(dot(axisU, axisU) > dot(c, c) ? axisU : c);	   	
+	axisV = normalize(cross(normal, axisU));
 	allowTexture = true;
 }
 
