@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>  // glm
 #include <vector>		// std::vector
+#include <algorithm>	// std::max
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -53,6 +54,12 @@ public:
 	glm::vec3 position;
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
+
+
+	glm::vec3 axisU;
+	glm::vec3 axisV;
+	bool allowTexture = false;
+	void alignTextureAxes();
 
 	void debug() override;
 };

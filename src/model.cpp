@@ -55,6 +55,12 @@ void Sphere::debug() {
 }
 
 
+void Plane::alignTextureAxes() {	
+	axisU = glm::vec3(normal.y, normal.z, -normal.x);
+	axisV = cross(normal, axisU);
+	allowTexture = true;
+}
+
 bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 	
 
@@ -66,6 +72,27 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 		if (rayLen <= minRayLen || rayLen > maxRayLen) {
 			return false;
 		}			
+			   
+		if (allowTexture) {
+			glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
+			float u = dot(hitPos, axisU);
+			float v = dot(hitPos, axisV);
+
+			float scale = 1.68;
+			bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
+
+			glm::vec3 colour;
+
+			if (white) {
+				colour = glm::vec3(1.0,1.0,1.0);
+			}
+			else {
+				colour = glm::vec3(0.4, 0.4, 0.4);
+			}	
+			material->Ka = colour;
+		}
+	
+
 		return true;
 	}
 	return false;
@@ -84,24 +111,23 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;
 	   
-
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
 
-		bool axProj = dot(cross((points[1] - points[0]), (hitPos - points[0])), plane->normal) < 0;
-		bool bxProj = dot(cross((points[2] - points[1]), (hitPos - points[1])), plane->normal) < 0;
-		bool cxProj = dot(cross((points[0] - points[2]), (hitPos - points[2])), plane->normal) < 0;
+		float axProj = dot(cross((points[1] - points[0]), (hitPos - points[0])), plane->normal);
+		float bxProj = dot(cross((points[2] - points[1]), (hitPos - points[1])), plane->normal);
+		float cxProj = dot(cross((points[0] - points[2]), (hitPos - points[2])), plane->normal);
 		
 		bool hit;
 		if (inside) {
-			hit = axProj && bxProj && cxProj;
+			hit = axProj<0 && bxProj<0 && cxProj<0;
 		}
 		else
 		{
-			hit = !axProj && !bxProj && !cxProj;
+			hit = axProj>0 && bxProj>0 && cxProj>0;
 		}
 
-		if (hit) {
+		if (hit) {			
 			normal = plane->normal;
 			rayLen = plane->rayLen;			
 			delete plane;
@@ -199,7 +225,6 @@ void Mesh::rotate() {
 		}
 	}	
 }
-
 
 
 void Mesh::debug() {

@@ -135,6 +135,9 @@ void jsonImport() {
 			plane->position = vector_to_vec3(object["position"]);
 			plane->normal = normalize(vector_to_vec3(object["normal"]));
 			plane->material = material;
+
+			plane->alignTextureAxes();
+
 			objects.push_back(plane);
 		}
 
@@ -153,13 +156,11 @@ void jsonImport() {
 			Mesh * mesh = new Mesh();
 			mesh->triangles = triangles;
 			//mesh->translate(glm::vec3(0.5,0.5,0));
-			mesh->resetOrigin();
-			mesh->scale(0.5f);			
-			
-			mesh->addQuaternion(glm::vec3(0.0, 0.0, 1.0), 90);
-			mesh->addQuaternion(glm::vec3(0.0, 1.0, 0.0), 90);
-			mesh->rotate();
-			//mesh->findSlabs();
+			//mesh->resetOrigin();
+			//mesh->scale(0.5f);					
+			//mesh->addQuaternion(glm::vec3(0.0, 0.0, 1.0), 90); 
+			//mesh->addQuaternion(glm::vec3(0.0, 1.0, 0.0), 90);
+			//mesh->rotate();
 
 			BoundingVolume* box = new BoundingVolume();
 			box->build(mesh);
