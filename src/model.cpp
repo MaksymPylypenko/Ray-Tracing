@@ -47,6 +47,37 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	if (inside) {
 		normal = -normal;
 	}	
+
+	// @TODO: decouple the texture thing..
+	// Math: https://people.cs.clemson.edu/~dhouse/courses/405/notes/texture-maps.pdf
+
+	glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
+	glm::vec3 point = hitPos- center;
+	float scale = 12.0;
+
+	// polar angle
+	float phi = acosf(point.y / radius);
+
+	// azimuthal angle
+	float theta = atan2f(point.x, point.z);
+
+	// The direction and proportion is not correct when reading texture from a regular bmp file!
+	// @TODO See this for improvement http://www.raytracerchallenge.com/bonus/texture-mapping.html
+	float u = theta / 3.1415926f;
+	float v = phi / 3.1415926f;	
+
+	bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
+
+	glm::vec3 colour;
+	if (white) {
+		colour = glm::vec3(1.0, 1.0, 1.0);
+	}
+	else {
+		colour = glm::vec3(0.1, 0.1, 0.1);
+	}
+	material->Ka = colour;
+
+
 	return true;
 }
 
