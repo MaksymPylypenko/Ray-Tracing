@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\scenes">
+      <UniqueIdentifier>{77a1a25e-beb4-40c3-a462-3607fe50c915}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\light">
+      <UniqueIdentifier>{90c5d173-077d-4b64-96b8-049afc7a1fa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\models">
+      <UniqueIdentifier>{522ac340-a8a8-4fe7-a956-2aec46fbac05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -30,7 +39,13 @@
     <ClInclude Include="..\src\raytracer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\model.h">
+    <ClInclude Include="..\src\models\model.h">
+      <Filter>Source Files\models</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\light\light.h">
+      <Filter>Source Files\light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scene_adapter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +59,25 @@
     <ClCompile Include="..\src\raytracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\model.cpp">
+    <ClCompile Include="..\src\models\model.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\models\mesh.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\models\plane.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\models\sphere.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\models\triangle.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\light\light.cpp">
+      <Filter>Source Files\light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scene_adapter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,41 +91,44 @@
     <None Include="..\src\Makefile">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\src\f.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="..\src\v.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\src\scenes\c.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\d.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\e.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\f.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\g.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\h.json">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\scenes\i.json">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="..\src\scenes\a.json">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\b.json">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\b2.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\c.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\d.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\e.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\f.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\g.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\h.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\i.json">
+      <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\i2.json">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\teapot.json">
+      <Filter>Source Files\scenes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

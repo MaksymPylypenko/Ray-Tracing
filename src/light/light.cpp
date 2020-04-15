@@ -1,17 +1,5 @@
-#include "common.h"
 #include "light.h"
-#include "model.h"
-
-
-bool isShadow(std::vector<Object*> &objects, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999) {
-	for (Object* object : objects) {
-		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen, false)) {
-			return true;
-		}
-	}
-	return false;
-}
-
+#include "../raytracer.h"
 
 glm::vec3 phong(glm::vec3 L, glm::vec3 N, glm::vec3 V,
 	glm::vec3 Kd, glm::vec3 Ks, float shininess, glm::vec3 Ids)
@@ -55,7 +43,7 @@ glm::vec3 Directional::apply(std::vector<Object*> objects, Material* material,
 
 	glm::vec3 L = -direction;
 
-	if (!isShadow(objects, hitPos, L)) {
+	if (!isShadow(hitPos, L)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -71,7 +59,7 @@ glm::vec3 Point::apply(std::vector<Object*> objects, Material* material,
 	float lightRayLen = length(L);
 	L = normalize(L);
 
-	if (!isShadow(objects, hitPos, L, lightRayLen)) {
+	if (!isShadow(hitPos, L, lightRayLen)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -92,7 +80,7 @@ glm::vec3 Spot::apply(std::vector<Object*> objects, Material* material,
 	float angle = glm::degrees(acos(dotNL));
 
 	if (angle <= cutoff) {
-		if (!isShadow(objects,hitPos, L, lightRayLen)) {
+		if (!isShadow(hitPos, L, lightRayLen)) {
 			return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 		}
 	}	

@@ -12,12 +12,16 @@
 const char *WINDOW_TITLE = "Ray Tracing";
 const double FRAME_RATE_MS = 1;
 
+typedef glm::vec3 point3;
+typedef glm::vec3 colour3;
+
 colour3 texture[1<<16]; // big enough for a row of pixels
 point3 vertices[2]; // xy+u for start and end of line
 GLuint Window;
 int vp_width, vp_height;
 float drawing_y = 0;
 
+float fov;
 point3 eye;
 float d = 1;
 
@@ -43,8 +47,7 @@ point3 s(int x, int y) {
 
 // OpenGL initialization
 void init(char *fn) {
-	choose_scene(fn);
-	jsonImport(); // Importing to my own data structure!
+	fov = loadScene(fn); // Importing to my own data structure!
    
 	// Create a vertex array object
 	GLuint vao;
@@ -101,9 +104,8 @@ void display( void ) {
 		if (drawing_y == int(drawing_y)) {
 
 			for (int x = 0; x < vp_width; x++) {
-				if (!trace(eye, s(x, y), texture[x], false)) {
-					texture[x] = background_colour;
-				}
+				glm::vec3 rayDir = normalize(s(x, y) - eye);
+				texture[x] = trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false);					
 			}
 
 			// to ensure a power-of-two texture, get the next highest power of two
@@ -157,13 +159,9 @@ void mouse( int button, int state, int x, int y ) {
 		case GLUT_LEFT_BUTTON:
 			colour3 c;
 			point3 uvw = s(x, y);
-			std::cout << std::endl;
-			if (trace(eye, uvw, c, true)) {
-				std::cout << "HIT @ ( " << uvw.x << "," << uvw.y << "," << uvw.z << " )\n";
-				std::cout << "      colour = ( " << c.r << "," << c.g << "," << c.b << " )\n";
-			} else {
-				std::cout << "MISS @ ( " << uvw.x << "," << uvw.y << "," << uvw.z << " )\n";
-			}
+			std::cout << "\nCasting a ray ...\n";
+			glm::vec3 rayDir = normalize(s(x, y) - eye);
+			trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, true);			
 			break;
 		}
 	}

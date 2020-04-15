@@ -1,14 +1,22 @@
-#include <glm/glm.hpp>
+#ifndef ray_h // include guard
+#define ray_h
 
-typedef glm::vec3 point3;
-typedef glm::vec3 colour3;
+#include "utility/scene_adapter.h"
 
-extern double fov;
-extern colour3 background_colour;
+// Initial ray configuration
+const float MIN_RAY_LEN = 0.000001f;
+const float MAX_RAY_LEN = 999.0f;
+const int REFLECTIVE_BOUNCES = 5;
+const bool IS_INSIDE = false;
 
-void choose_scene(char const *fn);
-void jsonImport();
+// returns [fov]
+float loadScene(char* fn);
 
-glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, bool inside, bool pick = false);
-bool trace(const point3& rayOrigin, const point3& screenPoint, glm::vec3& colour, bool pick);
+// This function is called recursively, returns a final [colour].
+glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, 
+	bool isInside, bool showDebug);
 
+// Similar to trace, except it finds the first hit, not the closest one
+bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999);
+
+#endif ray_h

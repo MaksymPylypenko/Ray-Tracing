@@ -1,7 +1,7 @@
 #ifndef model_h // include guard
 #define model_h
 
-#include "common.h"
+#include "../common.h"
 #include "model.h"
 
 #include <glm/glm.hpp>  // glm
@@ -11,8 +11,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-/*************************************************************************/
-/* Objects */
 
 class Material {
 public:
@@ -39,6 +37,7 @@ public:
 	virtual void debug();
 };
 
+
 class Sphere : public Object {
 public:
 	glm::vec3 center;
@@ -49,6 +48,7 @@ public:
 	float scale = 12.0;
 	void debug() override;
 };
+
 
 class Plane : public Object {
 public:
@@ -67,7 +67,6 @@ public:
 };
 
 
-
 class Triangle : public Object {
 public:
 	std::vector<glm::vec3> points;
@@ -79,7 +78,6 @@ public:
 	   
 	void debug() override;
 };
-
 
 
 class Mesh : public Object {
@@ -103,9 +101,7 @@ public:
 	void debug() override;
 };
 
-/*************************************************************************/
-/* Acceleration */
-
+/// Acceleration 
 
 class BoundingVolume : public Object {
 public:
@@ -115,7 +111,7 @@ public:
 
 	bool isLeave = false;
 
-	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 10, int currDepth = 0);
+	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 20, int currDepth = 0);
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside);
 	void debug();
 };

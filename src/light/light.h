@@ -1,17 +1,14 @@
 #ifndef light_h // include guard
 #define light_h
 
-#include "common.h"
+#include "../common.h"
+#include "../models/model.h"
 #include "light.h"
-#include "model.h"
 
 #include <glm/glm.hpp>  // glm
 #include <vector>		// std::vector
 
 using namespace std;
-
-const float MAX_RAY_LEN = 999.0f;
-const float MIN_RAY_LEN = 0.000001f;
 
 
 class Light {
