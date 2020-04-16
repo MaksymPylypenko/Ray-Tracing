@@ -4,34 +4,9 @@
 #include "../models/model.h"
 #include "acceleration.h"
 
-
 /// Allows to check if the [Ray] intersected a bounding volume
 bool isHitBounds(glm::vec3 min, glm::vec3 max, glm::vec3 rayOrigin, glm::vec3 rayDir,
 	float minRayLen, float maxRayLen);
-
-
-class Mesh : public Object {
-/// Holds as a set of [Triangles]
-///
-/// To hit a [Mesh] the ray should hit a triangle.
-/// Note, only the closest hit is considered
-public:
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
-		float minRayLen, float maxRayLen, bool inside = false) override;
-
-	// acceleration
-	std::vector<Triangle*> triangles;
-	void findBounds() override;
-
-	// transformations
-	glm::quat q;
-	void translate(glm::vec3 vector);
-	void scale(float scale);
-	void addQuaternion(glm::vec3 axis, float angle);
-	void rotate();
-
-	void debug() override;
-};
 
 
 class MeshHierarchy : public Object {
@@ -54,26 +29,30 @@ public:
 };
 
 
-class BoundingVolume : public Object {
+class BoundingVolume  {
 /// Holds as a set of high level objects like: [Spheres], [Planes], [MeshHierarchies].
 ///
 /// To hit a [BoundingVolume] the ray should hit an object.
 /// Note, only the closest hit is considered
 public:
+
+	glm::vec3 center;
+	glm::vec3 min;
+	glm::vec3 max;
+
 	Object* closest;
 	std::vector<Object*> objects;
-	void findBounds() override;
+	void findBounds();
 
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
-		float minRayLen, float maxRayLen, bool inside = false) override;
+		float minRayLen, float maxRayLen, bool inside = false);
 };
 
 
 class BVH {
 ///	Allows to speed up the rendering of a large set of objects (e.g. 10+)
 ///
-/// This is very similar to a [MeshHierarchy]. I just treat high level objects
-/// like: as triangles.
+/// This is very similar to a [MeshHierarchy]. I just treat high level objects as triangles.
 public:
 
 	BVH* children[8]; 

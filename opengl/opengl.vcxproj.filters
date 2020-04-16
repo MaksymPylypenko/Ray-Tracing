@@ -89,10 +89,16 @@
     <ClCompile Include="..\src\acceleration\aabb.cpp">
       <Filter>Source Files\acceleration</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\acceleration\mesh.cpp">
+    <ClCompile Include="..\src\models\mesh.cpp">
+      <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\acceleration\mesh_hierarchy.cpp">
       <Filter>Source Files\acceleration</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\acceleration\bounding_volume.cpp">
+    <ClCompile Include="..\src\acceleration\bv_hierarchy.cpp">
+      <Filter>Source Files\acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\acceleration\bv.cpp">
       <Filter>Source Files\acceleration</Filter>
     </ClCompile>
   </ItemGroup>

@@ -97,10 +97,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\acceleration\aabb.cpp" />
-    <ClCompile Include="..\src\acceleration\bounding_volume.cpp" />
-    <ClCompile Include="..\src\acceleration\mesh.cpp" />
+    <ClCompile Include="..\src\acceleration\bv.cpp" />
+    <ClCompile Include="..\src\acceleration\bv_hierarchy.cpp" />
+    <ClCompile Include="..\src\acceleration\mesh_hierarchy.cpp" />
     <ClCompile Include="..\src\light\light.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\models\mesh.cpp" />
     <ClCompile Include="..\src\models\model.cpp" />
     <ClCompile Include="..\src\models\plane.cpp" />
     <ClCompile Include="..\src\models\sphere.cpp" />

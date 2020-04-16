@@ -90,4 +90,29 @@ public:
 };
 
 
+
+class Mesh : public Object {
+/// Holds as a set of [Triangles]
+///
+/// To hit a [Mesh] the ray should hit a triangle.
+/// Note, only the closest hit is considered
+public:
+	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
+		float minRayLen, float maxRayLen, bool inside = false) override;
+
+	// acceleration
+	std::vector<Triangle*> triangles;
+	void findBounds() override;
+
+	// transformations
+	glm::quat q;
+	void translate(glm::vec3 vector);
+	void scale(float scale);
+	void addQuaternion(glm::vec3 axis, float angle);
+	void rotate();
+
+	void debug() override;
+};
+
+
 #endif model_h
