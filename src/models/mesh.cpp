@@ -2,7 +2,6 @@
 
 
 bool Mesh::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
-
 	rayLen = maxRayLen;
 
 	for (Triangle* triangle : triangles) {
@@ -21,7 +20,7 @@ bool Mesh::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float m
 }
 
 
-void Mesh::findBounds() {
+void Mesh::resetOrigin() {
 	min = triangles[0]->points[0];
 	max = triangles[0]->points[0];
 
@@ -47,6 +46,12 @@ void Mesh::debug() {
 
 
 // Transformations
+
+void Mesh::resetBarycenters() {
+	for (Triangle* triangle : triangles) {
+		triangle->setBarycenter();
+	}
+}
 
 void Mesh::translate(glm::vec3 vector) {
 	for (Triangle* triangle : triangles) {

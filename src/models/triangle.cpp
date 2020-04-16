@@ -53,7 +53,7 @@ void Triangle::setBarycenter() {
 	for (glm::vec3 p : points) {
 		curr += p;
 	}
-	center = curr / (float)points.size();
+	center = curr / 3.0f;
 }
 
 void Triangle::debug() {

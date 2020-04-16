@@ -82,6 +82,14 @@
         "material": {
             "ambient": [ 0.15, 0.15, 0.35 ],
             "diffuse": [ 0.7, 0, 0.8 ]
+        },
+        "transform": {
+            "new_origin": true,
+            "scale": 0.5,
+            "rotation": {
+                "axis": [ 0.0, 0.0, 1.0 ],             
+                "angle": 90.0
+            }            
         }
     }
   ],

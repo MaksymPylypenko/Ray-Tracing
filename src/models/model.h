@@ -97,13 +97,16 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
+	std::vector<Triangle*> triangles;
+
 	// acceleration
 	glm::vec3 min;
 	glm::vec3 max;
-	std::vector<Triangle*> triangles;
-	void findBounds();
+	void resetOrigin();
+
 
 	// transformations
+	void resetBarycenters();
 	glm::quat q;
 	void translate(glm::vec3 vector);
 	void scale(float scale);

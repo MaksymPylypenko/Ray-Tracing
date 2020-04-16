@@ -16,9 +16,6 @@ class MeshHierarchy : public Object {
 	/// into smaller groups based on proximity. This allows to group non-empty nodes 
 	/// on different depths to create bounding volumes.
 public:
-	glm::vec3 min;
-	glm::vec3 max;
-
 	MeshHierarchy* children[8] = { NULL }; // Using Octree to insert BVH nodes by proximity
 	Mesh* mesh = NULL;
 
@@ -27,8 +24,6 @@ public:
 	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 20, int currDepth = 0);
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) override;
 	void debug();
-
-	void findBounds();
 };
 
 

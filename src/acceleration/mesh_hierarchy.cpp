@@ -4,7 +4,6 @@
 bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDepth) {
 
 	mesh = newMesh;
-	mesh->findBounds();
 
 	// Mesh contains a minimum number of objects, this is a base case.
 	if (mesh->triangles.size() <= threshold || currDepth >= maxDepth) {
@@ -15,7 +14,6 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 
 	// Else, classify each triangle to 1 of the 8 nodes
 	int nodePointsNum[8] = { 0 };
-
 	
 	for (Triangle* triangle : mesh->triangles) {
 		triangle->nodeID = 0;
@@ -49,6 +47,7 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 
 			Mesh* subMesh = new Mesh();
 			subMesh->triangles = subset;
+			subMesh->resetOrigin();
 			children[i]->build(subMesh, threshold, maxDepth, currDepth + 1);
 		}
 	}
@@ -61,11 +60,11 @@ bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen
 
 	// @TODO add shadow ray hit...
 
-	if (!isHitBounds(mesh->min, mesh->max, rayOrigin, rayDir, minRayLen, maxRayLen)) {
+	if (!isHitBounds(mesh->min, mesh->max, rayOrigin, rayDir, minRayLen, maxRayLen)) {		
 		return false;
 	}
 
-	if (isLeave) { // Checking each triangle on the mesh			
+	if (isLeave) { // Checking each triangle on the small mesh	
 		if (mesh->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 			rayLen = mesh->rayLen;
 			normal = mesh->normal;
@@ -100,11 +99,4 @@ bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen
 
 void MeshHierarchy::debug() {
 	printf("MeshHierarchy @ RayLen = %f\n", rayLen);
-}
-
-
-void MeshHierarchy::findBounds() {
-	min = mesh->min;
-	max = mesh->max;
-	center = mesh->center;
 }

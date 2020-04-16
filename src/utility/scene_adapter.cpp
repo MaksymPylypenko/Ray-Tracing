@@ -134,7 +134,6 @@ void SceneAdapter::jsonImport() {
 				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
 				triangle->material = material;				
 				triangle->texture = hasTexture;		
-				triangle->setBarycenter();
 				triangles.push_back(triangle);
 			}
 						
@@ -148,19 +147,31 @@ void SceneAdapter::jsonImport() {
 				}
 				if (jsonTransform.find("translate") != jsonTransform.end()) {
 					mesh->translate(vector_to_vec3(jsonTransform["translate"]));
-				}						
+				}			
+				
+				if (jsonTransform.find("new_origin") != jsonTransform.end()) {
+					if ((jsonTransform["new_origin"]) == true) {
+						mesh->resetOrigin();
+					}
+				}
+				if (jsonTransform.find("scale") != jsonTransform.end()) {
+					mesh->scale(jsonTransform["scale"]);					
+				}
+				if (jsonTransform.find("rotation") != jsonTransform.end()) {
+					json& jsonRot = jsonTransform["rotation"];
+					glm::vec3 axis = vector_to_vec3(jsonRot["axis"]);
+					float angle = jsonRot["angle"];
+					mesh->addQuaternion(axis, angle);
+					mesh->rotate();
+				}					
 			}
 						
-			//mesh->resetOrigin();
-			//mesh->scale(0.5f);					
-			//mesh->addQuaternion(glm::vec3(0.0, 0.0, 1.0), 90); 
-			//mesh->addQuaternion(glm::vec3(0.0, 1.0, 0.0), 90);
-			//mesh->rotate();
+			mesh->resetOrigin();
+			mesh->resetBarycenters();
 
 			MeshHierarchy* mh = new MeshHierarchy();	
 			mh->build(mesh);			
 
-			//objects.push_back(box);
 			objects.push_back(mh);
 		}
 	}	
