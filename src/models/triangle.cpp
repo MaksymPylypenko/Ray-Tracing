@@ -5,7 +5,7 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 
 
 	Plane* plane = new Plane();
-	plane->position = points[0];
+	plane->center = points[0];
 
 	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;

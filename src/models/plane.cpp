@@ -23,7 +23,7 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 	float dotND = dot(normal, rayDir);
 
 	if (dotND < 0) {
-		rayLen = dot(normal, position - rayOrigin) / dotND;
+		rayLen = dot(normal, center - rayOrigin) / dotND;
 
 		if (rayLen <= minRayLen || rayLen > maxRayLen) {
 			return false;
@@ -55,4 +55,10 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 
 void Plane::debug() {
 	printf("Plane @ RayLen = %f\n", rayLen);
+}
+
+void Plane::findBounds() {
+	// Assuming that the diagonal of an "infinite" plane is at most 10.0f
+	min = center - 5.0f;
+	max = center + 5.0f;
 }

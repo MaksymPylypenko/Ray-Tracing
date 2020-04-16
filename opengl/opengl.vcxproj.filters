@@ -22,6 +22,9 @@
     <Filter Include="Source Files\models">
       <UniqueIdentifier>{522ac340-a8a8-4fe7-a956-2aec46fbac05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utility">
+      <UniqueIdentifier>{c4700b70-5fd7-4490-a8ef-306902d13b0d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,9 +36,6 @@
     <ClInclude Include="..\src\common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\json.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\raytracer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -45,8 +45,11 @@
     <ClInclude Include="..\src\light\light.h">
       <Filter>Source Files\light</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\scene_adapter.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\src\utility\json.hpp">
+      <Filter>Source Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\scene_adapter.h">
+      <Filter>Source Files\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -77,8 +80,11 @@
     <ClCompile Include="..\src\light\light.cpp">
       <Filter>Source Files\light</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\scene_adapter.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\src\utility\scene_adapter.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\models\bv.cpp">
+      <Filter>Source Files\models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +134,9 @@
       <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\teapot.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\a2.json">
       <Filter>Source Files\scenes</Filter>
     </None>
   </ItemGroup>

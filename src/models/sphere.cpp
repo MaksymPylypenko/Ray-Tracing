@@ -78,3 +78,10 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 void Sphere::debug() {
 	printf("Sphere @ RayLen = %f\n", rayLen);
 }
+
+
+
+void Sphere::findBounds() {	
+	min = center-radius;
+	max = center+radius;	
+}

@@ -2,7 +2,7 @@
 
 #include "scene_adapter.h"
 
-const char* PATH = "../scenes/";
+const char* PATH = "scenes/";
 
 
 json find(json& j, const std::string key, const std::string value) {
@@ -109,18 +109,22 @@ void SceneAdapter::jsonImport() {
 			sphere->radius = float(object["radius"]);
 			sphere->center = vector_to_vec3(object["position"]);
 			sphere->material = material;
-			objects.push_back(sphere);
+			//objects.push_back(sphere);
+
+			sphere->findBounds();
+			bv->objects.push_back(sphere);
 		}
 
 		else if (object["type"] == "plane") {
 			Plane* plane = new Plane();
-			plane->position = vector_to_vec3(object["position"]);
+			plane->center = vector_to_vec3(object["position"]);
 			plane->normal = normalize(vector_to_vec3(object["normal"]));
 			plane->material = material;
 
 			plane->alignTextureAxes();
 
-			objects.push_back(plane);
+			plane->findBounds();
+			bv->objects.push_back(plane);
 		}
 
 		else if (object["type"] == "mesh") {
@@ -137,12 +141,11 @@ void SceneAdapter::jsonImport() {
 			}
 			Mesh* mesh = new Mesh();
 			mesh->triangles = triangles;
-			mesh->resetOrigin();
-
-
+			//mesh->findBounds();
 			// for the teapot
-			/*mesh->scale(3.0f);
-			mesh->translate(glm::vec3(0, 0, -6));*/
+
+			//mesh->scale(3.0f);
+			//mesh->translate(glm::vec3(0, 0, -6));
 
 
 			//mesh->resetOrigin();
@@ -151,12 +154,16 @@ void SceneAdapter::jsonImport() {
 			//mesh->addQuaternion(glm::vec3(0.0, 1.0, 0.0), 90);
 			//mesh->rotate();
 
-			BoundingVolume* box = new BoundingVolume();
-			box->build(mesh);
+			MeshHierarchy* mh = new MeshHierarchy();	
+			mh->build(mesh);
+			mh->findBounds(); // set top level bounds for a mesh
 
-			objects.push_back(box);
+			//objects.push_back(box);
+			bv->objects.push_back(mh);
 		}
 	}
+	
+	bvHierarchy->build(bv);
 
 	json& jsonLights = scene["lights"];
 
