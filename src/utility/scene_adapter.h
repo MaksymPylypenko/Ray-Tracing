@@ -22,9 +22,6 @@ public:
 	std::vector<Object*> objects;
 	std::vector<Light*> lights;
 
-	BoundingVolume* bv = new BoundingVolume();
-	BVH* bvHierarchy = new BVH();
-
 	void choose_scene(char const* fn);
 	void jsonImport();
 };

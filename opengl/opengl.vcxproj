@@ -97,13 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\acceleration\aabb.cpp" />
-    <ClCompile Include="..\src\acceleration\bv.cpp" />
-    <ClCompile Include="..\src\acceleration\bv_hierarchy.cpp" />
     <ClCompile Include="..\src\acceleration\mesh_hierarchy.cpp" />
     <ClCompile Include="..\src\light\light.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\models\mesh.cpp" />
-    <ClCompile Include="..\src\models\model.cpp" />
+    <ClCompile Include="..\src\models\object.cpp" />
     <ClCompile Include="..\src\models\plane.cpp" />
     <ClCompile Include="..\src\models\sphere.cpp" />
     <ClCompile Include="..\src\models\triangle.cpp" />
@@ -119,6 +117,7 @@
     <None Include="..\src\scenes\b.json" />
     <None Include="..\src\scenes\b2.json" />
     <None Include="..\src\scenes\c.json" />
+    <None Include="..\src\scenes\c_checkers.json" />
     <None Include="..\src\scenes\d.json" />
     <None Include="..\src\scenes\e.json" />
     <None Include="..\src\scenes\f.json" />

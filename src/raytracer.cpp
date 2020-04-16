@@ -26,7 +26,7 @@ glm::vec3 applyLights(Material * material,
 
 bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen) {
 	for (Object* object : scene->objects) {
-		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen, false)) {
+		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen)) {
 			return true;
 		}
 	}
@@ -65,12 +65,21 @@ glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta, bool
 glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
 	bool isInside, bool showDebug) {
 		
-	glm::vec3 colour(0, 0, 0);
-			
-	if(scene->bvHierarchy->isHit(rayOrigin, rayDir, MIN_RAY_LEN, MAX_RAY_LEN, isInside))
-	{
-		Object* closest = scene->bvHierarchy->closest;
+	glm::vec3 colour(0, 0, 0);			
 
+	Object* closest = new Object();
+	closest->rayLen = MAX_RAY_LEN;
+
+	// traverse the objects	
+	for (Object* object : scene->objects) {
+		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, MAX_RAY_LEN, isInside)) {
+			if (object->rayLen < closest->rayLen) {
+				closest = object;
+			}
+		}
+	}
+
+	if (closest->rayLen != MAX_RAY_LEN) {
 		if (showDebug) {
 			closest->debug();
 		}
@@ -79,7 +88,7 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
 		glm::vec3 V = -rayDir;
 		glm::vec3 N = closest->normal;
 		Material * material = closest->material;
-	
+
 		if (material->transmission == glm::vec3(0,0,0)) { // absorb everything			
 			colour = applyLights(material, N, V, hitPos);
 		}

@@ -25,22 +25,20 @@ public:
 
 
 class Object {
-public:	
-	Material * material;
+public:		
+	glm::vec3 center;	
 	glm::vec3 normal;
+	
+	Material* material;
 	float rayLen;
 
 	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false);
 
-	
-	// added later...	
-	glm::vec3 center;
-	glm::vec3 min;
-	glm::vec3 max;
-	int nodeID; // used for the Octree construction
-	virtual void findBounds();
-
+	// for texture
+	bool texture = false;
+	virtual void checkersTexture(glm::vec3 hitPos);
+	   
 	virtual void debug();
 };
 
@@ -51,7 +49,7 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
-	void findBounds() override;
+	void checkersTexture(glm::vec3 hitPos) override;
 
 	float scale = 12.0;
 	void debug() override;
@@ -63,15 +61,12 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
-
-	void findBounds() override;
-
-
+	// for textures
 	glm::vec3 axisU;
 	glm::vec3 axisV;
 	float scale = 1.68;
-	bool allowTexture = false;
 	void alignTextureAxes();
+	void checkersTexture(glm::vec3 hitPos);
 
 	void debug() override;
 };
@@ -79,14 +74,16 @@ public:
 
 class Triangle : public Object {
 public:
-	std::vector<glm::vec3> points;
-
-	glm::vec3 Triangle::getBarycenter();
+	std::vector<glm::vec3> points;	
 
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 	   
 	void debug() override;
+
+	// for acceleration
+	int nodeID;
+	void setBarycenter();
 };
 
 
@@ -101,8 +98,10 @@ public:
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
 	// acceleration
+	glm::vec3 min;
+	glm::vec3 max;
 	std::vector<Triangle*> triangles;
-	void findBounds() override;
+	void findBounds();
 
 	// transformations
 	glm::quat q;

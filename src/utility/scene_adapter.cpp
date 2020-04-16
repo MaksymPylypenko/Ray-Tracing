@@ -65,14 +65,12 @@ void SceneAdapter::jsonImport() {
 		// Material
 		json& jsonMaterial = object["material"];
 		Material* material = new Material();
-
-		//if (object.find("transform") != object.end()) {
-		//	json& transform = object["transform"];
-
-		//	float scale;
-		//	std::vector<
-		//	material->Ka = vector_to_vec3(object["ambient"]);
-		//}
+		
+		bool hasTexture = false;
+		if (object.find("texture") != object.end()) {
+			json& jsonTexture = object["texture"];
+			hasTexture = jsonTexture["checkers"];
+		}
 
 		{
 			if (jsonMaterial.find("ambient") != jsonMaterial.end()) {
@@ -108,46 +106,51 @@ void SceneAdapter::jsonImport() {
 			Sphere* sphere = new Sphere();
 			sphere->radius = float(object["radius"]);
 			sphere->center = vector_to_vec3(object["position"]);
-			sphere->material = material;
-			//objects.push_back(sphere);
+			sphere->material = material;						
+			sphere->texture = hasTexture;			
 
-			sphere->findBounds();
-			bv->objects.push_back(sphere);
+			objects.push_back(sphere);
 		}
 
 		else if (object["type"] == "plane") {
 			Plane* plane = new Plane();
 			plane->center = vector_to_vec3(object["position"]);
 			plane->normal = normalize(vector_to_vec3(object["normal"]));
-			plane->material = material;
-
+			plane->material = material;		
 			plane->alignTextureAxes();
+			plane->texture = hasTexture;			
 
-			plane->findBounds();
-			bv->objects.push_back(plane);
+			objects.push_back(plane);
 		}
 
 		else if (object["type"] == "mesh") {
 
 			std::vector<Triangle*> triangles;
-
+						
 			for (std::vector<std::vector<float>> triangleJson : object["triangles"]) {
 				Triangle* triangle = new Triangle();
 				triangle->points.push_back(vector_to_vec3(triangleJson[0]));
 				triangle->points.push_back(vector_to_vec3(triangleJson[1]));
 				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
-				triangle->material = material;
+				triangle->material = material;				
+				triangle->texture = hasTexture;		
+				triangle->setBarycenter();
 				triangles.push_back(triangle);
 			}
+						
 			Mesh* mesh = new Mesh();
 			mesh->triangles = triangles;
-			//mesh->findBounds();
-			// for the teapot
 
-			//mesh->scale(3.0f);
-			//mesh->translate(glm::vec3(0, 0, -6));
-
-
+			if (object.find("transform") != object.end()) {
+				json& jsonTransform = object["transform"];
+				if (jsonTransform.find("scale") != jsonTransform.end()) {
+					mesh->scale(jsonTransform["scale"]);
+				}
+				if (jsonTransform.find("translate") != jsonTransform.end()) {
+					mesh->translate(vector_to_vec3(jsonTransform["translate"]));
+				}						
+			}
+						
 			//mesh->resetOrigin();
 			//mesh->scale(0.5f);					
 			//mesh->addQuaternion(glm::vec3(0.0, 0.0, 1.0), 90); 
@@ -155,15 +158,12 @@ void SceneAdapter::jsonImport() {
 			//mesh->rotate();
 
 			MeshHierarchy* mh = new MeshHierarchy();	
-			mh->build(mesh);
-			mh->findBounds(); // set top level bounds for a mesh
+			mh->build(mesh);			
 
 			//objects.push_back(box);
-			bv->objects.push_back(mh);
+			objects.push_back(mh);
 		}
-	}
-	
-	bvHierarchy->build(bv);
+	}	
 
 	json& jsonLights = scene["lights"];
 

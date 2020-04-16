@@ -14,6 +14,9 @@
             "diffuse": [ 1, 0, 0 ],
             "specular": [ 1, 1, 1 ],
             "shininess": 25.6
+        },
+        "texture": {
+            "checkers": true
         }
     },
     {
@@ -25,6 +28,9 @@
             "diffuse": [ 0.56, 0.24, 0.12 ],
             "specular": [ 0.4, 0.4, 0.4 ],
             "shininess": 120.888832
+        },
+        "texture": {
+            "checkers": true
         }
     },
     {
@@ -34,6 +40,9 @@
         "material": {
             "ambient": [ 0.2, 0.2, 0.2 ],
             "diffuse": [ 0.56, 0.24, 0.12 ]
+        },
+        "texture": {
+            "checkers": true
         }
     },
     {
@@ -43,6 +52,9 @@
         "material": {
             "ambient": [ 0.5, 0.5, 0.7 ],
             "diffuse": [ 0.72, 0.75, 0.84 ]
+        },
+        "texture": {
+            "checkers": true
         }
     },
     {
@@ -82,6 +94,10 @@
         "material": {
             "ambient": [ 0.15, 0.15, 0.35 ],
             "diffuse": [ 0.7, 0, 0.8 ]
+        },
+
+        "texture": {
+            "checkers": true
         }
     }
   ],

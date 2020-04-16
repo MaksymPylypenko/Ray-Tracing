@@ -36,10 +36,19 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		normal = -normal;
 	}
 
+	if (texture) {
+		checkersTexture(rayOrigin + rayDir * rayLen);
+	}
+	
+
+	return true;
+}
+
+
+void Sphere::checkersTexture(glm::vec3 hitPos) {
 	// @TODO: decouple the texture thing..
 	// Math: https://people.cs.clemson.edu/~dhouse/courses/405/notes/texture-maps.pdf
 
-	glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
 	glm::vec3 point = hitPos - center;
 
 	// polar angle
@@ -70,18 +79,8 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		colour = glm::vec3(0.1, 0.1, 0.1);
 	}
 	material->Ka = colour;
-
-
-	return true;
 }
 
 void Sphere::debug() {
 	printf("Sphere @ RayLen = %f\n", rayLen);
-}
-
-
-
-void Sphere::findBounds() {	
-	min = center-radius;
-	max = center+radius;	
 }

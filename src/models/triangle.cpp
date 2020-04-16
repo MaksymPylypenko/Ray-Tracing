@@ -10,9 +10,13 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;
 
-	//plane->material = new Material();
-	//plane->alignTextureAxes();
-	//plane->scale = 10.0;
+	if (texture) {
+		plane->material = new Material();
+		plane->texture = true;
+		plane->alignTextureAxes();
+		plane->scale = 10.0;
+	}
+	
 
 	if (plane->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
 		glm::vec3 hitPos = rayOrigin + plane->rayLen * rayDir;
@@ -31,7 +35,9 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 		}
 
 		if (hit) {
-			//material->Ka = plane->material->Ka;
+			if (texture) {
+				material->Ka = plane->material->Ka;
+			}
 			normal = plane->normal;
 			rayLen = plane->rayLen;
 			delete plane;
@@ -42,12 +48,12 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	return false;
 }
 
-glm::vec3 Triangle::getBarycenter() {
+void Triangle::setBarycenter() {
 	glm::vec3 curr;
 	for (glm::vec3 p : points) {
 		curr += p;
 	}
-	return curr / (float)points.size();
+	center = curr / (float)points.size();
 }
 
 void Triangle::debug() {

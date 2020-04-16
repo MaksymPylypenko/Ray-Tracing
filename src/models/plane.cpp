@@ -1,5 +1,25 @@
 #include "model.h"
 
+bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+
+
+	float dotND = dot(normal, rayDir);
+
+	if (dotND < 0) {
+		rayLen = dot(normal, center - rayOrigin) / dotND;
+
+		if (rayLen <= minRayLen || rayLen > maxRayLen) {
+			return false;
+		}
+
+		if (texture) {
+			checkersTexture(rayOrigin + rayDir * rayLen);
+		}
+		return true;
+	}
+	return false;
+}
+
 
 void Plane::alignTextureAxes() {
 	// This caused issues with a vertical plane on scene [c]...
@@ -14,51 +34,27 @@ void Plane::alignTextureAxes() {
 	axisU = dot(a, a) > dot(b, b) ? a : b;
 	axisU = normalize(dot(axisU, axisU) > dot(c, c) ? axisU : c);
 	axisV = normalize(cross(normal, axisU));
-	allowTexture = true;
 }
 
-bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
 
+void Plane::checkersTexture(glm::vec3 hitPos) {
+	float u = dot(hitPos, axisU);
+	float v = dot(hitPos, axisV);
 
-	float dotND = dot(normal, rayDir);
+	bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
 
-	if (dotND < 0) {
-		rayLen = dot(normal, center - rayOrigin) / dotND;
+	glm::vec3 colour;
 
-		if (rayLen <= minRayLen || rayLen > maxRayLen) {
-			return false;
-		}
-
-		/*if (allowTexture) {
-			glm::vec3 hitPos = rayOrigin + rayDir * rayLen;
-			float u = dot(hitPos, axisU);
-			float v = dot(hitPos, axisV);
-
-			bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
-
-			glm::vec3 colour;
-
-			if (white) {
-				colour = glm::vec3(1.0,1.0,1.0);
-			}
-			else {
-				colour = glm::vec3(0.4, 0.4, 0.4);
-			}
-			material->Ka = colour;
-		}*/
-
-
-		return true;
+	if (white) {
+		colour = glm::vec3(1.0, 1.0, 1.0);
 	}
-	return false;
+	else {
+		colour = glm::vec3(0.4, 0.4, 0.4);
+	}
+	material->Ka = colour;
 }
+
 
 void Plane::debug() {
 	printf("Plane @ RayLen = %f\n", rayLen);
-}
-
-void Plane::findBounds() {
-	// Assuming that the diagonal of an "infinite" plane is at most 10.0f
-	min = center - 5.0f;
-	max = center + 5.0f;
 }

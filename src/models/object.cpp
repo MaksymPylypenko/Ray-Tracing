@@ -11,6 +11,6 @@ void Object::debug() {
 }
 
 
-void Object::findBounds() {
-	///
+void Object::checkersTexture(glm::vec3 hitPos) {
+	texture = false;
 }

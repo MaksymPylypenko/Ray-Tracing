@@ -16,19 +16,16 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 	// Else, classify each triangle to 1 of the 8 nodes
 	int nodePointsNum[8] = { 0 };
 
+	
 	for (Triangle* triangle : mesh->triangles) {
-
-		glm::vec3 center = triangle->getBarycenter();
-		//printf("Barycenter = %f, %f, %f", triCenter.x, triCenter.y, triCenter.z);
-
 		triangle->nodeID = 0;
-		if (center.x > mesh->center.x) {
+		if (triangle->center.x > mesh->center.x) {
 			triangle->nodeID += 1;
 		}
-		if (center.y > mesh->center.y) {
+		if (triangle->center.y > mesh->center.y) {
 			triangle->nodeID += 2;
 		}
-		if (center.z > mesh->center.z) {
+		if (triangle->center.z > mesh->center.z) {
 			triangle->nodeID += 4;
 		}
 
@@ -59,7 +56,10 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 }
 
 
-bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, 
+	float maxRayLen, bool inside) {
+
+	// @TODO add shadow ray hit...
 
 	if (!isHitBounds(mesh->min, mesh->max, rayOrigin, rayDir, minRayLen, maxRayLen)) {
 		return false;
