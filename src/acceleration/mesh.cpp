@@ -1,5 +1,4 @@
-#include "model.h"
-
+#include "acceleration.h"
 
 void Mesh::findBounds() {
 	// init slabs to the first point in the mesh   

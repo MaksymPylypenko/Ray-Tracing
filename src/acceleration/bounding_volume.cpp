@@ -1,5 +1,4 @@
-#include "model.h"
-
+#include "acceleration.h"
 
 bool BoundingVolume::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
 	float minRayLen, float maxRayLen, bool inside) {

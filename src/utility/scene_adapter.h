@@ -8,6 +8,8 @@
 #include "json.hpp"
 
 #include "../models/model.h"
+#include "../acceleration/acceleration.h"
+
 #include "../light/light.h"
 
 using json = nlohmann::json;

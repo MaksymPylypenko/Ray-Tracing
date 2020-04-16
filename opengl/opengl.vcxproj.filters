@@ -25,6 +25,9 @@
     <Filter Include="Source Files\utility">
       <UniqueIdentifier>{c4700b70-5fd7-4490-a8ef-306902d13b0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\acceleration">
+      <UniqueIdentifier>{18a91432-82b7-43e0-a235-c66af2a8c5d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -51,6 +54,9 @@
     <ClInclude Include="..\src\utility\scene_adapter.h">
       <Filter>Source Files\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\acceleration\acceleration.h">
+      <Filter>Source Files\acceleration</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -63,9 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\models\model.cpp">
-      <Filter>Source Files\models</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\models\mesh.cpp">
       <Filter>Source Files\models</Filter>
     </ClCompile>
     <ClCompile Include="..\src\models\plane.cpp">
@@ -83,8 +86,14 @@
     <ClCompile Include="..\src\utility\scene_adapter.cpp">
       <Filter>Source Files\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\models\bv.cpp">
-      <Filter>Source Files\models</Filter>
+    <ClCompile Include="..\src\acceleration\aabb.cpp">
+      <Filter>Source Files\acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\acceleration\mesh.cpp">
+      <Filter>Source Files\acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\acceleration\bounding_volume.cpp">
+      <Filter>Source Files\acceleration</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
