@@ -86,3 +86,38 @@ glm::vec3 Spot::apply(std::vector<Object*> objects, Material* material,
 	}	
 	return glm::vec3(0, 0, 0);	
 }
+
+
+glm::vec3 Area::apply(std::vector<Object*> objects, Material* material,
+	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+
+	std::vector<glm::vec3> samples;
+
+	for (int i = 0; i < 100; i++) {
+		float lenU = distU * (rand() % 100 + 1) / 100.0f;
+		float lenV = distV * (rand() % 100 + 1) / 100.0f;
+
+		glm::vec3 currPos = position + dirU * lenU + dirV * lenV;
+
+		glm::vec3 L = currPos - hitPos;
+		float lightRayLen = length(L);
+
+		L = normalize(L);
+
+		glm::vec3 incoming;
+
+		if (!isShadow(hitPos, L, lightRayLen)) {
+			incoming = phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
+		}
+		else {
+			incoming = glm::vec3(0, 0, 0);
+		}
+		samples.push_back(incoming);
+	}
+
+	glm::vec3 total;
+	for (glm::vec3 curr : samples) {
+		total += curr;
+	}
+	return total / (float) samples.size();	
+}

@@ -8,8 +8,6 @@
 #include <glm/glm.hpp>  // glm
 #include <vector>		// std::vector
 
-using namespace std;
-
 
 class Light {
 public:
@@ -51,5 +49,21 @@ public:
 	glm::vec3 apply(std::vector<Object*> objects, Material* material,
 		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
 };
+
+
+class Area : public Light {
+public:
+	glm::vec3 colour;
+	glm::vec3 position;
+	glm::vec3 dirU;
+	glm::vec3 dirV;
+	glm::vec3 normal;
+	float distU;
+	float distV;
+
+	glm::vec3 apply(std::vector<Object*> objects, Material* material,
+		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+};
+
 
 #endif light_h

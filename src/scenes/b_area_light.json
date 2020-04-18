@@ -20,7 +20,8 @@
             "position": [ 0, -5.0, 0.0 ],
             "normal": [ 0, 1, 0 ],
             "material": {
-                "diffuse": [ 0.18, 0.30, 0.99 ]
+                "ambient": [ 0.8, 0.8, 0.8 ],
+                "diffuse": [ 0.8, 0.8, 0.8 ]
             }
         },
         {
@@ -63,12 +64,7 @@
   "lights": [
     {
         "type": "ambient",
-        "color": [ 0.70, 0.70, 0.70 ]
-    },  
-    {
-        "type": "point",
-        "color": [ 0.9, 0.9, 0.9 ],
-        "position": [ 0.0, 4.9, 8.0 ]
+        "color": [ 0,0,0 ]
     }
   ]
 }
