@@ -2,15 +2,17 @@
 #define model_h
 
 #include "../common.h"
+#include "../utility/texture.h"
 #include "model.h"
+
 
 #include <glm/glm.hpp>  // glm
 #include <vector>		// std::vector
 #include <algorithm>	// std::max
+#include <math.h>       // fmod 
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 
 class Material {
 public:
@@ -29,15 +31,15 @@ public:
 	glm::vec3 center;	
 	glm::vec3 normal;
 	
-	Material* material;
+	Material * material;
+	Texture* texture;
+
 	float rayLen;
 
 	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false);
-
-	// for texture
-	bool texture = false;
-	virtual void checkersTexture(glm::vec3 hitPos);
+	
+	virtual void applyTexture(glm::vec3 hitPos);
 	   
 	virtual void debug();
 };
@@ -49,9 +51,7 @@ public:
 	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
 		float minRayLen, float maxRayLen, bool inside = false) override;
 
-	void checkersTexture(glm::vec3 hitPos) override;
-
-	float scale = 12.0;
+	void applyTexture(glm::vec3 hitPos) override;
 	void debug() override;
 };
 
@@ -64,9 +64,8 @@ public:
 	// for textures
 	glm::vec3 axisU;
 	glm::vec3 axisV;
-	float scale = 1.68;
 	void alignTextureAxes();
-	void checkersTexture(glm::vec3 hitPos);
+	void applyTexture(glm::vec3 hitPos);
 
 	void debug() override;
 };

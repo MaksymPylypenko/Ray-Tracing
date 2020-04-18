@@ -90,8 +90,13 @@
     <ClInclude Include="..\src\light\light.h" />
     <ClInclude Include="..\src\models\model.h" />
     <ClInclude Include="..\src\raytracer.h" />
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP.h" />
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_BMP.h" />
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_DataStructures.h" />
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_VariousBMPutilities.h" />
     <ClInclude Include="..\src\utility\json.hpp" />
     <ClInclude Include="..\src\utility\scene_adapter.h" />
+    <ClInclude Include="..\src\utility\texture.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -107,7 +112,9 @@
     <ClCompile Include="..\src\models\triangle.cpp" />
     <ClCompile Include="..\src\q1.cpp" />
     <ClCompile Include="..\src\raytracer.cpp" />
+    <ClCompile Include="..\src\utility\EasyBMP\EasyBMP.cpp" />
     <ClCompile Include="..\src\utility\scene_adapter.cpp" />
+    <ClCompile Include="..\src\utility\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\fshader.glsl" />
@@ -118,6 +125,7 @@
     <None Include="..\src\scenes\b2.json" />
     <None Include="..\src\scenes\c.json" />
     <None Include="..\src\scenes\c_checkers.json" />
+    <None Include="..\src\scenes\c_textures.json" />
     <None Include="..\src\scenes\d.json" />
     <None Include="..\src\scenes\e.json" />
     <None Include="..\src\scenes\f.json" />
@@ -131,6 +139,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\ReadMe.md" />
+    <Text Include="..\src\utility\EasyBMP\BSD_(revised)_license.txt" />
+    <Text Include="..\src\utility\EasyBMP\EasyBMP_ChangeLog.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

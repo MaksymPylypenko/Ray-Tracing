@@ -36,49 +36,31 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		normal = -normal;
 	}
 
-	if (texture) {
-		checkersTexture(rayOrigin + rayDir * rayLen);
+	if (texture->mode != TextureMode::none) {
+		applyTexture(rayOrigin + rayDir * rayLen);
 	}
 	
+
+	// Experimenting with bump mapping
+	//normal = glm::vec4(normal, 1) * glm::rotate(glm::mat4(),
+	//glm::radians((float)(rand() % 160 - 80)),
+	//glm::vec3((rand() % 2), (rand() % 2), (rand() % 2)));
 
 	return true;
 }
 
 
-void Sphere::checkersTexture(glm::vec3 hitPos) {
-	// @TODO: decouple the texture thing..
-	// Math: https://people.cs.clemson.edu/~dhouse/courses/405/notes/texture-maps.pdf
+void Sphere::applyTexture(glm::vec3 hitPos) {
+	// Resource used: 
+	// 1. https://people.cs.clemson.edu/~dhouse/courses/405/notes/texture-maps.pdf
+	// 2. http://www.raytracerchallenge.com/bonus/texture-mapping.html
 
 	glm::vec3 point = hitPos - center;
-
-	// polar angle
 	float phi = acosf(point.y / radius);
-
-	// azimuthal angle
-	float theta = atan2f(point.x, point.z);
-
-	// The direction and proportion is not correct when reading texture from a regular bmp file!
-	// @TODO See this for improvement http://www.raytracerchallenge.com/bonus/texture-mapping.html
-	float u = theta / 3.1415926f;
+	float theta = atan2f(point.x, point.z);	
+	float u = theta / 6.2831852f;
 	float v = phi / 3.1415926f;
-
-	bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
-
-	glm::vec3 colour;
-
-	// Experimenting with bump mapping
-	// @TODO make look better...
-	/*normal = glm::vec4(normal, 1) * glm::rotate(glm::mat4(),
-		glm::radians((float)(rand() % 40 - 20)),
-		glm::vec3((rand() % 2), (rand() % 2), (rand() % 2)));*/
-
-	if (white) {
-		colour = glm::vec3(1.0, 1.0, 1.0);
-	}
-	else {
-		colour = glm::vec3(0.1, 0.1, 0.1);
-	}
-	material->Ka = colour;
+	material->Ka = texture->getPixel(u, v);
 }
 
 void Sphere::debug() {

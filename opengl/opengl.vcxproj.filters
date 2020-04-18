@@ -28,6 +28,9 @@
     <Filter Include="Source Files\acceleration">
       <UniqueIdentifier>{18a91432-82b7-43e0-a235-c66af2a8c5d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utility\EasyBMP">
+      <UniqueIdentifier>{dd4b42c8-6805-4aad-99f9-717b6302d31f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -56,6 +59,21 @@
     </ClInclude>
     <ClInclude Include="..\src\acceleration\acceleration.h">
       <Filter>Source Files\acceleration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP.h">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_BMP.h">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_DataStructures.h">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_VariousBMPutilities.h">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility\texture.h">
+      <Filter>Source Files\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +112,12 @@
     </ClCompile>
     <ClCompile Include="..\src\models\object.cpp">
       <Filter>Source Files\models</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utility\EasyBMP\EasyBMP.cpp">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utility\texture.cpp">
+      <Filter>Source Files\utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,10 +175,19 @@
     <None Include="..\src\scenes\c_checkers.json">
       <Filter>Source Files\scenes</Filter>
     </None>
+    <None Include="..\src\scenes\c_textures.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\ReadMe.md">
       <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="..\src\utility\EasyBMP\BSD_(revised)_license.txt">
+      <Filter>Source Files\utility\EasyBMP</Filter>
+    </Text>
+    <Text Include="..\src\utility\EasyBMP\EasyBMP_ChangeLog.txt">
+      <Filter>Source Files\utility\EasyBMP</Filter>
     </Text>
   </ItemGroup>
 </Project>

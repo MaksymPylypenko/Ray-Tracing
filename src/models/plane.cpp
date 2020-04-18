@@ -12,8 +12,8 @@ bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float 
 			return false;
 		}
 
-		if (texture) {
-			checkersTexture(rayOrigin + rayDir * rayLen);
+		if (texture->mode!= TextureMode::none) {
+			applyTexture(rayOrigin + rayDir * rayLen);
 		}
 		return true;
 	}
@@ -37,21 +37,10 @@ void Plane::alignTextureAxes() {
 }
 
 
-void Plane::checkersTexture(glm::vec3 hitPos) {
+void Plane::applyTexture(glm::vec3 hitPos) {
 	float u = dot(hitPos, axisU);
-	float v = dot(hitPos, axisV);
-
-	bool white = (int(round(u * scale)) + int(round(v * scale))) % 2 == 0;
-
-	glm::vec3 colour;
-
-	if (white) {
-		colour = glm::vec3(1.0, 1.0, 1.0);
-	}
-	else {
-		colour = glm::vec3(0.4, 0.4, 0.4);
-	}
-	material->Ka = colour;
+	float v = dot(hitPos, axisV);	
+	material->Ka = texture->getPixel(u, v);
 }
 
 

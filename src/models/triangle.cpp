@@ -10,11 +10,10 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 	inside == true ? plane->normal = -N : plane->normal = N;
 
-	if (texture) {
+	if (texture->mode != TextureMode::none) {
 		plane->material = new Material();
-		plane->texture = true;
+		plane->texture = texture;
 		plane->alignTextureAxes();
-		plane->scale = 10.0;
 	}
 	
 
@@ -35,7 +34,8 @@ bool Triangle::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, flo
 		}
 
 		if (hit) {
-			if (texture) {
+			if (texture->mode != TextureMode::none) {
+				// projecting plane texture onto triangle
 				material->Ka = plane->material->Ka;
 			}
 			normal = plane->normal;

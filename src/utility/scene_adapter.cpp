@@ -1,8 +1,10 @@
 // The JSON library allows you to reference JSON arrays like C++ vectors and JSON objects like C++ maps.
 
 #include "scene_adapter.h"
+#include "texture.h"
 
 const char* PATH = "scenes/";
+
 
 
 json find(json& j, const std::string key, const std::string value) {
@@ -62,53 +64,90 @@ void SceneAdapter::jsonImport() {
 	for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
 		json& object = *it;
 
-		// Material
-		json& jsonMaterial = object["material"];
-		Material* material = new Material();
-		
-		bool hasTexture = false;
+		// Textures	
+
+		Texture* texture = new Texture();
+
 		if (object.find("texture") != object.end()) {
 			json& jsonTexture = object["texture"];
-			hasTexture = jsonTexture["checkers"];
+
+			texture->scaleU = jsonTexture["scale"];
+			texture->scaleV = jsonTexture["scale"];
+
+			if (jsonTexture.find("procedural") != jsonTexture.end()) {
+				json& procedural = jsonTexture["procedural"];
+				if(procedural == "checkers") {
+					texture->mode = TextureMode::checkers;
+				}
+			}
+
+			if (jsonTexture.find("custom") != jsonTexture.end()) {
+				texture->mode = TextureMode::custom;
+				json& custom = jsonTexture["custom"];
+				if (custom == "lava") {
+					texture->loadBMP("textures/lava24.bmp");
+				}
+				else if (custom == "stone") {
+					texture->loadBMP("textures/stone24.bmp");
+				}
+				else if (custom == "paper") {
+					texture->loadBMP("textures/paper24.bmp");
+				}
+				else if (custom == "metal") {
+					texture->loadBMP("textures/metal24.bmp");
+				}
+				else if (custom == "obsidian") {
+					texture->loadBMP("textures/obsidian24.bmp");
+				}
+			}			
 		}
 
-		{
-			if (jsonMaterial.find("ambient") != jsonMaterial.end()) {
-				material->Ka = vector_to_vec3(jsonMaterial["ambient"]);
-			}
-			if (jsonMaterial.find("diffuse") != jsonMaterial.end()) {
-				material->Kd = vector_to_vec3(jsonMaterial["diffuse"]);
-			}
-			if (jsonMaterial.find("specular") != jsonMaterial.end()) {
-				material->Ks = vector_to_vec3(jsonMaterial["specular"]);
-			}
-			if (jsonMaterial.find("shininess") != jsonMaterial.end()) {
-				material->shininess = jsonMaterial["shininess"];
-			}
-			else {
-				material->shininess = 0.0;
-			}
-			if (jsonMaterial.find("reflective") != jsonMaterial.end()) {
-				material->reflection = vector_to_vec3(jsonMaterial["reflective"]);
-			}
-			if (jsonMaterial.find("transmissive") != jsonMaterial.end()) {
-				material->transmission = vector_to_vec3(jsonMaterial["transmissive"]);
-			}
-			if (jsonMaterial.find("refraction") != jsonMaterial.end()) {
-				material->refraction = jsonMaterial["refraction"];
-			}
-			else {
-				material->refraction = 0.0;
-			}
+	
+		// Materials	
+
+		Material* material = new Material();
+		json& jsonMaterial = object["material"];
+
+		if (jsonMaterial.find("ambient") != jsonMaterial.end()) {
+			material->Ka = vector_to_vec3(jsonMaterial["ambient"]);
 		}
+		if (jsonMaterial.find("diffuse") != jsonMaterial.end()) {
+			material->Kd = vector_to_vec3(jsonMaterial["diffuse"]);
+		}
+		if (jsonMaterial.find("specular") != jsonMaterial.end()) {
+			material->Ks = vector_to_vec3(jsonMaterial["specular"]);
+		}
+		if (jsonMaterial.find("shininess") != jsonMaterial.end()) {
+			material->shininess = jsonMaterial["shininess"];
+		}
+		else {
+			material->shininess = 0.0;
+		}
+		if (jsonMaterial.find("reflective") != jsonMaterial.end()) {
+			material->reflection = vector_to_vec3(jsonMaterial["reflective"]);
+		}
+		if (jsonMaterial.find("transmissive") != jsonMaterial.end()) {
+			material->transmission = vector_to_vec3(jsonMaterial["transmissive"]);
+		}
+		if (jsonMaterial.find("refraction") != jsonMaterial.end()) {
+			material->refraction = jsonMaterial["refraction"];
+		}
+		else {
+			material->refraction = 0.0;
+		}
+		
+
+		// Objects
 
 		if (object["type"] == "sphere") {
 			Sphere* sphere = new Sphere();
 			sphere->radius = float(object["radius"]);
 			sphere->center = vector_to_vec3(object["position"]);
-			sphere->material = material;						
-			sphere->texture = hasTexture;			
-
+			sphere->material = material;	
+			if (texture->mode != TextureMode::none) {
+				texture->scaleU *= 2; // adjusting for polar coordinates
+			}
+			sphere->texture = texture;
 			objects.push_back(sphere);
 		}
 
@@ -118,8 +157,7 @@ void SceneAdapter::jsonImport() {
 			plane->normal = normalize(vector_to_vec3(object["normal"]));
 			plane->material = material;		
 			plane->alignTextureAxes();
-			plane->texture = hasTexture;			
-
+			plane->texture = texture;
 			objects.push_back(plane);
 		}
 
@@ -133,7 +171,7 @@ void SceneAdapter::jsonImport() {
 				triangle->points.push_back(vector_to_vec3(triangleJson[1]));
 				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
 				triangle->material = material;				
-				triangle->texture = hasTexture;		
+				triangle->texture = texture;		
 				triangles.push_back(triangle);
 			}
 						
