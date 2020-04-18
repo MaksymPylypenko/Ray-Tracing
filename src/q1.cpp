@@ -104,8 +104,39 @@ void display( void ) {
 		if (drawing_y == int(drawing_y)) {
 
 			for (int x = 0; x < vp_width; x++) {
-				glm::vec3 rayDir = normalize(s(x, y) - eye);
-				texture[x] = trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false);					
+
+				bool antialiasing = true;
+
+				if (antialiasing)
+				{
+					float offset = 0.25;
+					std::vector<glm::vec3> samples;
+					std::vector<glm::vec3> rays;
+
+					rays.push_back(normalize(s(x + offset, y + offset) - eye));
+					rays.push_back(normalize(s(x - offset, y - offset) - eye));
+					rays.push_back(normalize(s(x + offset, y - offset) - eye));
+					rays.push_back(normalize(s(x - offset, y + offset) - eye));
+
+					for (glm::vec3 rayDir : rays) {
+						samples.push_back(
+							trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false));
+					}
+
+					glm::vec3 out;
+					for (glm::vec3 colour : samples) {
+						out += colour;
+					}
+					texture[x] = out / (float)samples.size();
+				}
+				else {
+					glm::vec3 rayDir = normalize(s(x, y) - eye);
+					texture[x] = trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false);
+				}
+	
+				
+
+								
 			}
 
 			// to ensure a power-of-two texture, get the next highest power of two

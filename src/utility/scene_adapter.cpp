@@ -247,15 +247,14 @@ void SceneAdapter::jsonImport() {
 		}
 	}
 
-	Area* area = new Area();
-	area->position = glm::vec3(1, 3, 0);
-	area->dirU = glm::vec3(0, 0, 1);
-	area->dirV = glm::vec3(-1, 0, 0);
-	area->distU = 2.0f;
-	area->distV = 2.0f;
-	area->normal = normalize(cross(area->dirU, area->dirV));
-	area->colour = glm::vec3(0.8, 0.8, 0.8);
-
-	lights.push_back(area);
+	//Area* area = new Area();
+	//area->position = glm::vec3(1, 3, 0);
+	//area->dirU = glm::vec3(0, 0, 1);
+	//area->dirV = glm::vec3(-1, 0, 0);
+	//area->distU = 2.0f;
+	//area->distV = 2.0f;
+	//area->normal = normalize(cross(area->dirU, area->dirV));
+	//area->colour = glm::vec3(0.8, 0.8, 0.8);
+	//lights.push_back(area);
 
 }
