@@ -36,7 +36,9 @@ public:
 	Texture* texture = nullptr;
 	bool isNegative;
 
+	// Hit information
 	float rayLen = 0.0;
+	bool inside = false;
 
 	virtual bool isHit(Ray ray);	
 	virtual void applyTexture(glm::vec3 hitPos);	   

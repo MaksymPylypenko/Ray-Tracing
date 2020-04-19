@@ -37,7 +37,7 @@ bool isShadow(Ray ray) {
 
 /// Recursive Ray Tracer
 
-glm::vec3 trace(Ray ray, bool negativeHasColour, bool showDebug) {
+glm::vec3 trace(Ray ray, bool showDebug) {
 		
 	glm::vec3 colour(0, 0, 0);			
 
@@ -61,76 +61,105 @@ glm::vec3 trace(Ray ray, bool negativeHasColour, bool showDebug) {
 		}
 
 		glm::vec3 hitPos = ray.origin + closest->rayLen * ray.direction;
+			
+		/// UNION & INTERSECTION OF OBJECTS
+		//if (closest->isNegative && !ray.blendingMode) {
+		//	ray.blendingMode = true;
+		//	ray.origin = hitPos;
+		//	//ray.isInside = !ray.isInside;
 
-		//// Hitting a negative object
-		//if (closest->isNegative && !negativeHasColour) {
+		//	if (showDebug) {
+		//		printf("Hitting a negative object ...\n\n");
+		//	}
+
+		//	return trace(ray, showDebug);
+		//}
+		//else if (closest->isNegative && ray.blendingMode) {
+		//	ray.blendingMode = false;
+		//	
+		//	if (!ray.negativeOn) {
+		//		if (showDebug) {
+		//			printf("Leaving a negative object\n\n");
+		//		}
+		//		ray.origin = hitPos;
+		//		ray.isInside = !ray.isInside;
+		//		return trace(ray, showDebug);
+		//	}
+		//	if (showDebug) {
+		//		printf("Rendering a inner part of a negative object\n\n");
+		//	}			
+		//}
+		//else if (!closest->isNegative && ray.blendingMode) {
+
+		//	if (showDebug) {
+		//		printf("Hitting a positive object\n\n");
+		//	}
 		//	ray.origin = hitPos;
 		//	ray.isInside = !ray.isInside;
-		//	return trace(ray, negativeHasColour, showDebug);
+		//	ray.negativeOn = !ray.negativeOn;
+		//	return trace(ray, showDebug);
 		//}
-		//// Flip bool, whenq hitting a positive objct 
-		//if (!closest->isNegative) {
-		//	return trace(hitPos, rayDir, bouncesLeft, !isInside, !negativeHasColour, showDebug);
-		//}
-
-
+		
 		
 		glm::vec3 V = -ray.direction;
 		glm::vec3 N = closest->normal;
 		Material * material = closest->material;
+		bool inside = closest->inside;
 
 		if (material->transmission == glm::vec3(0,0,0)) { // absorb everything			
 			colour = applyLights(material, N, V, hitPos);
 		}
 		else { // absorb some portion of a light			
 
-			if (!ray.isInside) { // don't want to trap light inside...
+			if (inside) { // don't want to trap light inside...
 				glm::vec3 absorbed = 1.0f - material->transmission;
 				colour = absorbed * applyLights(material, N, V, hitPos);
 			}				
 
 			if (material->refraction != 0.0) { 				
 				// Doesn't work if an object is inside another object... 
-				float eta;
-				ray.isInside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
-				ray.refract(hitPos, N, eta);
-				if (ray.direction == glm::vec3(0, 0, 0)) {
+				float eta = material->refraction;
+
+				if (ray.refract(hitPos, N, eta, inside)) {
+					if (showDebug) {
+						if (inside) {
+							printf("Refracting MATERIAL --> AIR\n\n");
+						}
+						else {
+							printf("Refracting AIR --> MATERIAL\n\n");
+						}
+					}
+					ray.origin = ray.origin;
+					colour += material->transmission * trace(ray, showDebug);					
+				}
+				else {
 					if (ray.bouncesLeft > 0) {
 						if (showDebug) {
 							printf("Total internal reflection ...\n\n");
 						}
 						ray.reflect(hitPos, N, V);
 						ray.bouncesLeft--;
-						colour += trace(ray, negativeHasColour, showDebug);
-					}				
-				}
-				else {
-					if (showDebug) {
-						if (!ray.isInside) {
-							printf("Refracting AIR --> MATERIAL\n\n");
-						}
-						else {
-							printf("Refracting MATERIAL --> AIR\n\n");
-						}
-
+						colour += trace(ray, showDebug);
 					}
-					ray.isInside = !ray.isInside;
-					colour += material->transmission * trace(ray, negativeHasColour, showDebug);
 				}				
 			}	
 			else {
-				colour += material->transmission * trace(ray, negativeHasColour, showDebug);
+				if (showDebug) {
+					printf("Simple Transmission ...\n\n");
+				}
+				ray.origin = hitPos;
+				colour += material->transmission * trace(ray, showDebug);
 			}
 		}				
 		
 		if (material->reflection != glm::vec3(0,0,0)) {
-			if (ray.bouncesLeft > 0 && !ray.isInside) {
+			if (ray.bouncesLeft > 0 ) { //&& !closest->inside) {
 				if (showDebug) {
 					printf("Reflecting ...\n\n");					
 				}
 				ray.reflect(hitPos, N, V);
 				ray.bouncesLeft--;
-				colour += material->reflection * trace(ray, negativeHasColour, showDebug);
+				colour += material->reflection * trace(ray, showDebug);
 			}
 		}		
 	}

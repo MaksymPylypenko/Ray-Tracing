@@ -2,20 +2,16 @@
 
 
 bool Triangle::isHit(Ray ray) {
-
-
+	
 	Plane* plane = new Plane();
 	plane->center = points[0];
-
-	glm::vec3 N = normalize(cross((points[1] - points[0]), (points[2] - points[0])));
-	ray.isInside == true ? plane->normal = -N : plane->normal = N;
+	plane->normal = -normalize(cross((points[1] - points[0]), (points[2] - points[0])));
 
 	if (texture->mode != TextureMode::none) {
 		plane->material = new Material();
 		plane->texture = texture;
-		plane->alignTextureAxes();
-	}
-	
+		plane->alignTextureAxes(); // @TODO, decouple this
+	}	
 
 	if (plane->isHit(ray)) {
 		glm::vec3 hitPos = ray.origin + plane->rayLen * ray.direction;
@@ -24,13 +20,24 @@ bool Triangle::isHit(Ray ray) {
 		float bxProj = dot(cross((points[2] - points[1]), (hitPos - points[1])), plane->normal);
 		float cxProj = dot(cross((points[0] - points[2]), (hitPos - points[2])), plane->normal);
 
-		bool hit;
-		if (ray.isInside) {
-			hit = axProj < 0 && bxProj < 0 && cxProj < 0;
+		bool hit = false;
+	
+		if (plane->inside) {
+			// INSIDE HIT
+			if (axProj <= 0 && bxProj <= 0 && cxProj <= 0) {
+				normal = plane->normal;
+				inside = true;
+				hit = true;
+			}			
 		}
-		else
-		{
-			hit = axProj >= 0 && bxProj >= 0 && cxProj >= 0;
+		else {
+			// OUTSIDE HIT
+			if (axProj >= 0 && bxProj >= 0 && cxProj >= 0)
+			{
+				normal = plane->normal;
+				inside = false;
+				hit = true;
+			}
 		}
 
 		if (hit) {
@@ -38,7 +45,7 @@ bool Triangle::isHit(Ray ray) {
 				// projecting plane texture onto triangle
 				material->Ka = plane->material->Ka;
 			}
-			normal = plane->normal;
+			
 			rayLen = plane->rayLen;
 			delete plane;
 			return true;
@@ -57,5 +64,5 @@ void Triangle::setBarycenter() {
 }
 
 void Triangle::debug() {
-	printf("Triangle @ RayLen = %f\n", rayLen);
+	printf("Triangle HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
 }

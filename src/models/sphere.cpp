@@ -1,45 +1,61 @@
 #include "model.h"
 
-bool Sphere::isHit(Ray ray) {
 
-	float bSq = pow(dot(ray.direction, ray.origin - center), 2);
-	float FourAC = dot(ray.direction, ray.direction) * dot(ray.origin - center, ray.origin - center) - radius * radius;
-	float discriminant = bSq - FourAC;
+bool Sphere::isHit(Ray ray) {
+		
+	glm::vec3 L = ray.origin - center;
+	float a = dot(ray.direction, ray.direction);
+	float b = dot(ray.direction, L);
+	float discriminant = b*b + radius * radius - a * dot(L, L);
 
 	if (discriminant < 0) {
 		return false;
 	}
 
 	float sqrtDisc = sqrt(discriminant);
-	float rest = dot(-ray.direction, ray.origin - center) / dot(ray.direction, ray.direction);
+	float rest = dot(-ray.direction, L) / a;
 
-	if (discriminant > 0) {
-		float t1 = rest + sqrtDisc / dot(ray.direction, ray.direction);
-		float t2 = rest - sqrtDisc / dot(ray.direction, ray.direction);
-		if (ray.isInside) {
-			t1 > t2 ? rayLen = t1 : rayLen = t2;
+	if (discriminant > ray.minLen) {
+		float t0 = rest + sqrtDisc / dot(ray.direction, ray.direction);
+		float t1 = rest - sqrtDisc / dot(ray.direction, ray.direction);
+	
+		if (t0 > t1) {
+			std::swap(t0, t1); // make sure t0 is the smallest
 		}
-		else {
-			t1 < t2 ? rayLen = t1 : rayLen = t2;
+
+		inside = false;
+		if (t0 < ray.minLen) {
+			//printf("\nT0 = %f, T1 = %f\n", t0, t1);
+			t0 = t1;
+			// ray might still hit from inside
+			if (t0 < ray.minLen) {
+				// t0 & t1 are before hitPos
+				return false;
+			} 
+			else {
+				inside = true;
+			}			
 		}
+		rayLen = t0;
 	}
-	else {  // discriminant < 0 
+	else {  // discriminant == 0 
 		rayLen = rest;
 	}
 
 	if (rayLen < ray.minLen || rayLen > ray.maxLen) {
+		//inside = false;
 		return false;
 	}
+	
 
 	normal = normalize((ray.origin + ray.direction * rayLen) - center);
-	if (ray.isInside) {
+	if (inside) {
 		normal = -normal;
 	}
-
+			
 	if (texture->mode != TextureMode::none) {
 		applyTexture(ray.origin + ray.direction * rayLen);
-	}
-	
+	}	
 
 	// Experimenting with bump mapping
 	//normal = glm::vec4(normal, 1) * glm::rotate(glm::mat4(),
@@ -64,5 +80,5 @@ void Sphere::applyTexture(glm::vec3 hitPos) {
 }
 
 void Sphere::debug() {
-	printf("Sphere @ RayLen = %f\n", rayLen);
+	printf("Sphere HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
 }

@@ -2,21 +2,27 @@
 
 bool Plane::isHit(Ray ray) {
 
-
 	float dotND = dot(normal, ray.direction);
 
-	if (dotND < 0) {
-		rayLen = dot(normal, center - ray.origin) / dotND;
-
-		if (rayLen <= ray.minLen || rayLen > ray.maxLen) {
-			return false;
-		}
-
-		//if (texture->mode!= TextureMode::none) {
-		//	applyTexture(rayOrigin + rayDir * rayLen);
-		//}
-		return true;
+	if (dotND < -0.05) {
+		inside = true;
 	}
+	else if (dotND > 0.05) {
+		inside = false;
+		dotND = -dotND;
+		normal = -normal;
+	}			
+	else { // parallel
+		return false;
+	}
+	
+	rayLen = dot(normal, center - ray.origin) / dotND;
+
+	
+	if (rayLen > ray.minLen && rayLen < ray.maxLen) {
+		return true;
+	}		
+	
 	return false;
 }
 
@@ -45,5 +51,5 @@ void Plane::applyTexture(glm::vec3 hitPos) {
 
 
 void Plane::debug() {
-	printf("Plane @ RayLen = %f\n", rayLen);
+	printf("Plane HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
 }

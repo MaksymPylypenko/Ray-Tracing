@@ -68,6 +68,8 @@ bool MeshHierarchy::isHit(Ray ray) {
 			rayLen = mesh->rayLen;
 			normal = mesh->normal;
 			material = mesh->material;
+			isNegative = mesh->isNegative;
+			inside = mesh->inside;
 			return true;
 		}
 		else {
@@ -84,6 +86,8 @@ bool MeshHierarchy::isHit(Ray ray) {
 						rayLen = child->rayLen;
 						normal = child->normal;
 						material = child->material;
+						isNegative = child->isNegative;
+						inside = child->inside;
 					}
 				}
 			}
@@ -97,5 +101,5 @@ bool MeshHierarchy::isHit(Ray ray) {
 }
 
 void MeshHierarchy::debug() {
-	printf("MeshHierarchy @ RayLen = %f\n", rayLen);
+	printf("MeshHierarchy HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
 }

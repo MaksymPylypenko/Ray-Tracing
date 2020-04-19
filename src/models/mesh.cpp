@@ -10,6 +10,8 @@ bool Mesh::isHit(Ray ray) {
 				rayLen = triangle->rayLen;
 				normal = triangle->normal;
 				material = triangle->material;
+				isNegative = triangle->isNegative;
+				inside = triangle->inside;
 			}
 		}
 	}

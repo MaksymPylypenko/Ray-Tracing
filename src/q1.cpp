@@ -123,7 +123,7 @@ void display( void ) {
 						ray.origin = eye;
 						ray.direction = rayDir;
 						samples.push_back(
-							trace(ray, false, false));
+							trace(ray, false));
 					}
 
 					glm::vec3 out;
@@ -137,7 +137,7 @@ void display( void ) {
 					Ray ray = Ray();
 					ray.origin = eye;
 					ray.direction = rayDir;
-					texture[x] = trace(ray, false, false);
+					texture[x] = trace(ray, false);
 				}
 	
 				
@@ -196,12 +196,12 @@ void mouse( int button, int state, int x, int y ) {
 		case GLUT_LEFT_BUTTON:
 			colour3 c;
 			point3 uvw = s(x, y);
-			std::cout << "\nCasting a ray ...\n";
+			std::cout << "\n\nCASTING A RAY\n\n";
 			glm::vec3 rayDir = normalize(s(x, y) - eye);
 			Ray ray = Ray();
 			ray.origin = eye;
 			ray.direction = rayDir;
-			trace(ray, false, true);			
+			trace(ray, true);			
 			break;
 		}
 	}
