@@ -193,6 +193,8 @@ void SceneAdapter::jsonImport() {
 			Mesh* mesh = new Mesh();
 			mesh->triangles = triangles;
 
+			printf("Added a mesh, Triangles count = %d\n", triangles.size());
+
 			if (object.find("transform") != object.end()) {
 				json& jsonTransform = object["transform"];
 				if (jsonTransform.find("scale") != jsonTransform.end()) {

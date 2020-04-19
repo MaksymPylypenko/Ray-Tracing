@@ -2,12 +2,12 @@
 
 #include "common.h"
 #include "raytracer.h"
-
 #include <iostream>
-#define M_PI 3.14159265358979323846264338327950288
 #include <cmath>
-
 #include <glm/glm.hpp>
+#include <chrono>  // for high_resolution_clock
+
+#define M_PI 3.14159265358979323846264338327950288
 
 const char *WINDOW_TITLE = "Ray Tracing";
 const double FRAME_RATE_MS = 1;
@@ -24,6 +24,9 @@ float drawing_y = 0;
 float fov;
 point3 eye;
 float d = 1;
+
+std::chrono::time_point<std::chrono::high_resolution_clock> start;
+std::chrono::time_point<std::chrono::high_resolution_clock> finish;
 
 //----------------------------------------------------------------------------
 
@@ -80,6 +83,8 @@ void init(char *fn) {
 	glBindTexture( GL_TEXTURE_1D, textureID );
 	glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+
+	
 }
 
 //----------------------------------------------------------------------------
@@ -89,6 +94,12 @@ void display( void ) {
 	// (when fract(drawing_y) == 0.0, draw one buffer, when it is 0.5 draw the other)
 	
 	if (drawing_y <= 0.5) {
+		if (drawing_y == 0.0) {
+			// Record start time
+			std::cout << "Starting a timer\n";
+			start = std::chrono::high_resolution_clock::now();
+		}
+
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		glFlush();
@@ -96,7 +107,6 @@ void display( void ) {
 		glutSwapBuffers();
 
 		drawing_y += 0.5;
-
 	} else if (drawing_y >= 1.0 && drawing_y <= vp_height + 0.5) {
 		int y = int(drawing_y) - 1;
 
@@ -171,6 +181,13 @@ void display( void ) {
 		
 		drawing_y += 0.5;
 	}
+
+	if (drawing_y == vp_height) {
+		// Record end time
+		finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+	}	
 }
 
 //----------------------------------------------------------------------------
