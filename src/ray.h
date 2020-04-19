@@ -14,8 +14,8 @@ public:
 	int bouncesLeft = 5;
 	bool isInside = false;
 
-	glm::vec3 reflect(glm::vec3 hitPos, glm::vec3 N, glm::vec3 V);
-	glm::vec3 refract(glm::vec3 hitPos, glm::vec3 N, float eta);
+	void reflect(glm::vec3 hitPos, glm::vec3 N, glm::vec3 V);
+	void refract(glm::vec3 hitPos, glm::vec3 N, float eta);
 };
 
 #endif ray_h
