@@ -1,22 +1,17 @@
-#ifndef ray_h // include guard
-#define ray_h
+#ifndef raytracer_h // include guard
+#define raytracer_h
 
 #include "utility/scene_adapter.h"
-
-// Initial ray configuration
-const float MIN_RAY_LEN = 0.000001f;
-const float MAX_RAY_LEN = 999.0f;
-const int REFLECTIVE_BOUNCES = 5;
-const bool IS_INSIDE = false;
+#include "ray.h"
 
 // returns [fov]
 float loadScene(char* fn);
 
 // This function is called recursively, returns a final [colour].
-glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft, 
-	bool isInside, bool showDebug);
+glm::vec3 trace(Ray ray, bool negativeHasColor, bool showDebug);
 
 // Similar to trace, except it finds the first hit, not the closest one
-bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen = 999);
+bool isShadow(Ray ray);
 
-#endif ray_h
+
+#endif raytracer_h

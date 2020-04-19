@@ -60,9 +60,18 @@ void SceneAdapter::choose_scene(char const* fn) {
 void SceneAdapter::jsonImport() {
 	json& jsonObjects = scene["objects"];
 
+
+
 	// traverse the objects	
 	for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
 		json& object = *it;
+
+		// Boolean operation (e.g. allows to make union or intersection of 2 objects)
+		bool isNegative = false;
+
+		if (object.find("subtract") != object.end()) {
+			isNegative = object["subtract"];
+		}
 
 		// Textures	
 
@@ -100,6 +109,9 @@ void SceneAdapter::jsonImport() {
 					texture->loadBMP("textures/obsidian24.bmp");
 				}
 			}			
+		}
+		else {
+			texture->mode = TextureMode::none;
 		}
 
 	
@@ -148,6 +160,7 @@ void SceneAdapter::jsonImport() {
 				texture->scaleU *= 2; // adjusting for polar coordinates
 			}
 			sphere->texture = texture;
+			sphere->isNegative = isNegative;
 			objects.push_back(sphere);
 		}
 
@@ -158,6 +171,7 @@ void SceneAdapter::jsonImport() {
 			plane->material = material;		
 			plane->alignTextureAxes();
 			plane->texture = texture;
+			plane->isNegative = isNegative;
 			objects.push_back(plane);
 		}
 
@@ -172,6 +186,7 @@ void SceneAdapter::jsonImport() {
 				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
 				triangle->material = material;				
 				triangle->texture = texture;		
+				triangle->isNegative = isNegative;
 				triangles.push_back(triangle);
 			}
 						

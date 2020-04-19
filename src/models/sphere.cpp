@@ -1,9 +1,9 @@
 #include "model.h"
 
-bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+bool Sphere::isHit(Ray ray) {
 
-	float bSq = pow(dot(rayDir, rayOrigin - center), 2);
-	float FourAC = dot(rayDir, rayDir) * dot(rayOrigin - center, rayOrigin - center) - radius * radius;
+	float bSq = pow(dot(ray.direction, ray.origin - center), 2);
+	float FourAC = dot(ray.direction, ray.direction) * dot(ray.origin - center, ray.origin - center) - radius * radius;
 	float discriminant = bSq - FourAC;
 
 	if (discriminant < 0) {
@@ -11,12 +11,12 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 	}
 
 	float sqrtDisc = sqrt(discriminant);
-	float rest = dot(-rayDir, rayOrigin - center) / dot(rayDir, rayDir);
+	float rest = dot(-ray.direction, ray.origin - center) / dot(ray.direction, ray.direction);
 
 	if (discriminant > 0) {
-		float t1 = rest + sqrtDisc / dot(rayDir, rayDir);
-		float t2 = rest - sqrtDisc / dot(rayDir, rayDir);
-		if (inside) {
+		float t1 = rest + sqrtDisc / dot(ray.direction, ray.direction);
+		float t2 = rest - sqrtDisc / dot(ray.direction, ray.direction);
+		if (ray.isInside) {
 			t1 > t2 ? rayLen = t1 : rayLen = t2;
 		}
 		else {
@@ -27,17 +27,17 @@ bool Sphere::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float
 		rayLen = rest;
 	}
 
-	if (rayLen < minRayLen || rayLen > maxRayLen) {
+	if (rayLen < ray.minLen || rayLen > ray.maxLen) {
 		return false;
 	}
 
-	normal = normalize((rayOrigin + rayDir * rayLen) - center);
-	if (inside) {
+	normal = normalize((ray.origin + ray.direction * rayLen) - center);
+	if (ray.isInside) {
 		normal = -normal;
 	}
 
 	if (texture->mode != TextureMode::none) {
-		applyTexture(rayOrigin + rayDir * rayLen);
+		applyTexture(ray.origin + ray.direction * rayLen);
 	}
 	
 

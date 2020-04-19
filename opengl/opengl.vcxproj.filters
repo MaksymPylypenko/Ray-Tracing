@@ -75,6 +75,9 @@
     <ClInclude Include="..\src\utility\texture.h">
       <Filter>Source Files\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ray.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -119,6 +122,9 @@
     <ClCompile Include="..\src\utility\texture.cpp">
       <Filter>Source Files\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\fshader.glsl">
@@ -137,9 +143,6 @@
       <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\b.json">
-      <Filter>Source Files\scenes</Filter>
-    </None>
-    <None Include="..\src\scenes\b2.json">
       <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\c.json">
@@ -176,6 +179,9 @@
       <Filter>Source Files\scenes</Filter>
     </None>
     <None Include="..\src\scenes\c_textures.json">
+      <Filter>Source Files\scenes</Filter>
+    </None>
+    <None Include="..\src\scenes\b_area_light.json">
       <Filter>Source Files\scenes</Filter>
     </None>
   </ItemGroup>

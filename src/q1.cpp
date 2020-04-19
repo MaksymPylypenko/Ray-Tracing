@@ -105,7 +105,7 @@ void display( void ) {
 
 			for (int x = 0; x < vp_width; x++) {
 
-				bool antialiasing = true;
+				bool antialiasing = false;
 
 				if (antialiasing)
 				{
@@ -119,8 +119,11 @@ void display( void ) {
 					rays.push_back(normalize(s(x - offset, y + offset) - eye));
 
 					for (glm::vec3 rayDir : rays) {
+						Ray ray = Ray();
+						ray.origin = eye;
+						ray.direction = rayDir;
 						samples.push_back(
-							trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false));
+							trace(ray, false, false));
 					}
 
 					glm::vec3 out;
@@ -131,7 +134,10 @@ void display( void ) {
 				}
 				else {
 					glm::vec3 rayDir = normalize(s(x, y) - eye);
-					texture[x] = trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, false);
+					Ray ray = Ray();
+					ray.origin = eye;
+					ray.direction = rayDir;
+					texture[x] = trace(ray, false, false);
 				}
 	
 				
@@ -192,7 +198,10 @@ void mouse( int button, int state, int x, int y ) {
 			point3 uvw = s(x, y);
 			std::cout << "\nCasting a ray ...\n";
 			glm::vec3 rayDir = normalize(s(x, y) - eye);
-			trace(eye, rayDir, REFLECTIVE_BOUNCES, IS_INSIDE, true);			
+			Ray ray = Ray();
+			ray.origin = eye;
+			ray.direction = rayDir;
+			trace(ray, false, true);			
 			break;
 		}
 	}

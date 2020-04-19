@@ -89,6 +89,7 @@
     <ClInclude Include="..\src\common.h" />
     <ClInclude Include="..\src\light\light.h" />
     <ClInclude Include="..\src\models\model.h" />
+    <ClInclude Include="..\src\ray.h" />
     <ClInclude Include="..\src\raytracer.h" />
     <ClInclude Include="..\src\utility\EasyBMP\EasyBMP.h" />
     <ClInclude Include="..\src\utility\EasyBMP\EasyBMP_BMP.h" />
@@ -111,6 +112,7 @@
     <ClCompile Include="..\src\models\sphere.cpp" />
     <ClCompile Include="..\src\models\triangle.cpp" />
     <ClCompile Include="..\src\q1.cpp" />
+    <ClCompile Include="..\src\ray.cpp" />
     <ClCompile Include="..\src\raytracer.cpp" />
     <ClCompile Include="..\src\utility\EasyBMP\EasyBMP.cpp" />
     <ClCompile Include="..\src\utility\scene_adapter.cpp" />
@@ -122,7 +124,7 @@
     <None Include="..\src\scenes\a.json" />
     <None Include="..\src\scenes\a2.json" />
     <None Include="..\src\scenes\b.json" />
-    <None Include="..\src\scenes\b2.json" />
+    <None Include="..\src\scenes\b_area_light.json" />
     <None Include="..\src\scenes\c.json" />
     <None Include="..\src\scenes\c_checkers.json" />
     <None Include="..\src\scenes\c_textures.json" />

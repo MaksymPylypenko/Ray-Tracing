@@ -1,11 +1,11 @@
 #include "model.h"
 
 
-bool Mesh::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
-	rayLen = maxRayLen;
+bool Mesh::isHit(Ray ray) {
+	rayLen = ray.maxLen;
 
 	for (Triangle* triangle : triangles) {
-		if (triangle->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
+		if (triangle->isHit(ray)) {
 			if (triangle->rayLen < rayLen) {
 				rayLen = triangle->rayLen;
 				normal = triangle->normal;
@@ -13,7 +13,7 @@ bool Mesh::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float m
 			}
 		}
 	}
-	if (rayLen != maxRayLen) {
+	if (rayLen != ray.maxLen) {
 		return true;
 	}
 	return false;

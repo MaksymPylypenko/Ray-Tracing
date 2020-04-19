@@ -1,20 +1,20 @@
 #include "model.h"
 
-bool Plane::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+bool Plane::isHit(Ray ray) {
 
 
-	float dotND = dot(normal, rayDir);
+	float dotND = dot(normal, ray.direction);
 
 	if (dotND < 0) {
-		rayLen = dot(normal, center - rayOrigin) / dotND;
+		rayLen = dot(normal, center - ray.origin) / dotND;
 
-		if (rayLen <= minRayLen || rayLen > maxRayLen) {
+		if (rayLen <= ray.minLen || rayLen > ray.maxLen) {
 			return false;
 		}
 
-		if (texture->mode!= TextureMode::none) {
-			applyTexture(rayOrigin + rayDir * rayLen);
-		}
+		//if (texture->mode!= TextureMode::none) {
+		//	applyTexture(rayOrigin + rayDir * rayLen);
+		//}
 		return true;
 	}
 	return false;

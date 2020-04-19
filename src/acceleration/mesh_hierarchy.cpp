@@ -55,17 +55,16 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 }
 
 
-bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, 
-	float maxRayLen, bool inside) {
+bool MeshHierarchy::isHit(Ray ray) {
 
 	// @TODO add shadow ray hit...
 
-	if (!isHitBounds(mesh->min, mesh->max, rayOrigin, rayDir, minRayLen, maxRayLen)) {		
+	if (!isHitBounds(ray, mesh->min, mesh->max)) {		
 		return false;
 	}
 
 	if (isLeave) { // Checking each triangle on the small mesh	
-		if (mesh->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
+		if (mesh->isHit(ray)) {
 			rayLen = mesh->rayLen;
 			normal = mesh->normal;
 			material = mesh->material;
@@ -76,11 +75,11 @@ bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen
 		}
 	}
 	else { // Checking the next round of Bounding Volumes	
-		rayLen = maxRayLen;
+		rayLen = ray.maxLen;
 
 		for (MeshHierarchy* child : children) {
 			if (child) {
-				if (child->isHit(rayOrigin, rayDir, minRayLen, maxRayLen, inside)) {
+				if (child->isHit(ray)) {
 					if (child->rayLen < rayLen) { // looking for the closest hit
 						rayLen = child->rayLen;
 						normal = child->normal;
@@ -89,7 +88,7 @@ bool MeshHierarchy::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen
 				}
 			}
 		}
-		if (rayLen != maxRayLen) {
+		if (rayLen != ray.maxLen) {
 			return true;
 		}
 	}

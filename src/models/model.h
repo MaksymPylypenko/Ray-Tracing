@@ -3,7 +3,7 @@
 
 #include "../common.h"
 #include "../utility/texture.h"
-#include "model.h"
+#include "../ray.h"
 
 
 #include <glm/glm.hpp>  // glm
@@ -13,6 +13,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 
 class Material {
 public:
@@ -31,16 +32,14 @@ public:
 	glm::vec3 center;	
 	glm::vec3 normal;
 	
-	Material * material;
-	Texture* texture;
+	Material * material = nullptr;
+	Texture* texture = nullptr;
+	bool isNegative;
 
-	float rayLen;
+	float rayLen = 0.0;
 
-	virtual bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-		float minRayLen, float maxRayLen, bool inside = false);
-	
-	virtual void applyTexture(glm::vec3 hitPos);
-	   
+	virtual bool isHit(Ray ray);	
+	virtual void applyTexture(glm::vec3 hitPos);	   
 	virtual void debug();
 };
 
@@ -48,8 +47,7 @@ public:
 class Sphere : public Object {
 public:
 	float radius;
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-		float minRayLen, float maxRayLen, bool inside = false) override;
+	bool isHit(Ray ray) override;
 
 	void applyTexture(glm::vec3 hitPos) override;
 	void debug() override;
@@ -58,8 +56,7 @@ public:
 
 class Plane : public Object {
 public:
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-		float minRayLen, float maxRayLen, bool inside = false) override;
+	bool isHit(Ray ray) override;
 
 	// for textures
 	glm::vec3 axisU;
@@ -75,8 +72,7 @@ class Triangle : public Object {
 public:
 	std::vector<glm::vec3> points;	
 
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, 
-		float minRayLen, float maxRayLen, bool inside = false) override;
+	bool isHit(Ray ray) override;
 	   
 	void debug() override;
 
@@ -93,8 +89,7 @@ class Mesh : public Object {
 /// To hit a [Mesh] the ray should hit a triangle.
 /// Note, only the closest hit is considered
 public:
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir,
-		float minRayLen, float maxRayLen, bool inside = false) override;
+	bool isHit(Ray ray) override;
 
 	std::vector<Triangle*> triangles;
 

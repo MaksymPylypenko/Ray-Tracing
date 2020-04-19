@@ -1,12 +1,13 @@
 #ifndef accel_h // include guard
 #define accel_h
 
+#include "../raytracer.h"
 #include "../models/model.h"
 #include "acceleration.h"
 
+
 /// Allows to check if the [Ray] intersected a bounding volume
-bool isHitBounds(glm::vec3 min, glm::vec3 max, glm::vec3 rayOrigin, glm::vec3 rayDir,
-	float minRayLen, float maxRayLen);
+bool isHitBounds(Ray ray, glm::vec3 min, glm::vec3 max);
 
 
 class MeshHierarchy : public Object {
@@ -22,7 +23,7 @@ public:
 	bool isLeave = false;
 
 	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 20, int currDepth = 0);
-	bool isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) override;
+	bool isHit(Ray ray) override;
 	void debug();
 };
 

@@ -24,68 +24,58 @@ glm::vec3 applyLights(Material * material,
 	return colour;
 }
 
-bool isShadow(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayLen) {
+bool isShadow(Ray ray) {
 	for (Object* object : scene->objects) {
-		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, maxRayLen)) {
+		if (object->isHit(ray)) {
 			return true;
 		}
 	}
 	return false;
 }
 
-/// Change of direction
 
-glm::vec3 reflectRay(glm::vec3 hitPos, glm::vec3 N,	glm::vec3 V) {
-	return normalize(2 * dot(N, V) * N - V); 
-}
-
-
-glm::vec3 refractRay(glm::vec3 hitPos, glm::vec3 I, glm::vec3 N, float eta, bool inside) {
-
-	float dotIN = dot(I, N);
-	float k = 1 - eta * eta * (1 - dotIN * dotIN);
-
-	if (inside) {
-		if (k < 0) {
-			return glm::vec3(0, 0, 0);
-		}
-		else {
-			return normalize(eta * (I - N * dotIN) - N * sqrt(k));
-		}
-	}
-	else {
-		assert(k > 0);		
-		return normalize(eta * (I - N * dotIN) - N * sqrt(k));				
-	}
-	
-}
 
 /// Recursive Ray Tracer
 
-glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
-	bool isInside, bool showDebug) {
+glm::vec3 trace(Ray ray, bool negativeHasColour, bool showDebug) {
 		
 	glm::vec3 colour(0, 0, 0);			
 
 	Object* closest = new Object();
-	closest->rayLen = MAX_RAY_LEN;
+	closest->rayLen = ray.maxLen;
 
 	// traverse the objects	
 	for (Object* object : scene->objects) {
-		if (object->isHit(rayOrigin, rayDir, MIN_RAY_LEN, MAX_RAY_LEN, isInside)) {
+		if (object->isHit(ray)) {
 			if (object->rayLen < closest->rayLen) {
 				closest = object;
 			}
 		}
 	}
 
-	if (closest->rayLen != MAX_RAY_LEN) {
+	if (closest->rayLen != ray.maxLen) {
+				
+
 		if (showDebug) {
 			closest->debug();
 		}
 
-		glm::vec3 hitPos = rayOrigin + closest->rayLen * rayDir;
-		glm::vec3 V = -rayDir;
+		glm::vec3 hitPos = ray.origin + closest->rayLen * ray.direction;
+
+		//// Hitting a negative object
+		//if (closest->isNegative && !negativeHasColour) {
+		//	ray.origin = hitPos;
+		//	ray.isInside = !ray.isInside;
+		//	return trace(ray, negativeHasColour, showDebug);
+		//}
+		//// Flip bool, whenq hitting a positive objct 
+		//if (!closest->isNegative) {
+		//	return trace(hitPos, rayDir, bouncesLeft, !isInside, !negativeHasColour, showDebug);
+		//}
+
+
+		
+		glm::vec3 V = -ray.direction;
 		glm::vec3 N = closest->normal;
 		Material * material = closest->material;
 
@@ -94,7 +84,7 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
 		}
 		else { // absorb some portion of a light			
 
-			if (!isInside) { // don't want to trap light inside...
+			if (!ray.isInside) { // don't want to trap light inside...
 				glm::vec3 absorbed = 1.0f - material->transmission;
 				colour = absorbed * applyLights(material, N, V, hitPos);
 			}				
@@ -102,20 +92,21 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
 			if (material->refraction != 0.0) { 				
 				// Doesn't work if an object is inside another object... 
 				float eta;
-				isInside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
-				glm::vec3 refrDir = refractRay(hitPos, rayDir, N, eta, isInside);
-				if (refrDir == glm::vec3(0, 0, 0)) {
-					if (bouncesLeft > 0) {
+				ray.isInside == true ? eta = material->refraction : eta = 1.0 / material->refraction;
+				ray.refract(hitPos, N, eta);
+				if (ray.direction == glm::vec3(0, 0, 0)) {
+					if (ray.bouncesLeft > 0) {
 						if (showDebug) {
 							printf("Total internal reflection ...\n\n");
 						}
-						glm::vec3 internalRefl = reflectRay(hitPos, N, V);
-						colour += trace(hitPos, internalRefl, bouncesLeft-1, isInside, showDebug);
+						ray.reflect(hitPos, N, V);
+						ray.bouncesLeft--;
+						colour += trace(ray, negativeHasColour, showDebug);
 					}				
 				}
 				else {
 					if (showDebug) {
-						if (!isInside) {
+						if (!ray.isInside) {
 							printf("Refracting AIR --> MATERIAL\n\n");
 						}
 						else {
@@ -123,21 +114,23 @@ glm::vec3 trace(glm::vec3 rayOrigin, glm::vec3 rayDir, int bouncesLeft,
 						}
 
 					}
-					colour += material->transmission * trace(hitPos, refrDir, bouncesLeft, !isInside, showDebug);
+					ray.isInside = !ray.isInside;
+					colour += material->transmission * trace(ray, negativeHasColour, showDebug);
 				}				
 			}	
 			else {
-				colour += material->transmission * trace(hitPos, rayDir, bouncesLeft, isInside, showDebug);
+				colour += material->transmission * trace(ray, negativeHasColour, showDebug);
 			}
 		}				
 		
 		if (material->reflection != glm::vec3(0,0,0)) {
-			if (bouncesLeft > 0 && !isInside) {
+			if (ray.bouncesLeft > 0 && !ray.isInside) {
 				if (showDebug) {
 					printf("Reflecting ...\n\n");					
 				}
-				glm::vec3 reflDir = reflectRay(hitPos, N, V);
-				colour += material->reflection * trace(hitPos, reflDir, bouncesLeft-1, isInside, showDebug);
+				ray.reflect(hitPos, N, V);
+				ray.bouncesLeft--;
+				colour += material->reflection * trace(ray, negativeHasColour, showDebug);
 			}
 		}		
 	}

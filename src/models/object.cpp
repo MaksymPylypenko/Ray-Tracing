@@ -2,7 +2,7 @@
 #include "../common.h"
 
 
-bool Object::isHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float minRayLen, float maxRayLen, bool inside) {
+bool Object::isHit(Ray ray) {
 	/// Abstract
 	return false;
 }
