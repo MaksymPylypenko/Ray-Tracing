@@ -1,9 +1,9 @@
 # Ray tracing 
 
-This is a recursive ray tracer that I built as a final project for my Computer Graphics course.
-
 * Author: Maksym Pylypenko
 * Email: pylypenm@myumanitoba.ca
+
+This is a recursive ray tracer that I built as a final project for my Computer Graphics course.
 
 <details>
  <summary>A complete list of features</summary>
