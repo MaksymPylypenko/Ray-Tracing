@@ -5,7 +5,10 @@ This is a recursive ray tracer that I built as a final project for my Computer G
 * Author: Maksym Pylypenko
 * Email: pylypenm@myumanitoba.ca
 
-## A complete list of features:
+<details>
+ <summary>A complete list of features</summary>
+<p>
+    
 * `Basic ray tracer`
   * Bidirectional hit tests for [Sphere, Plane, Triangle]
   * Phong illumination 
@@ -30,6 +33,10 @@ This is a recursive ray tracer that I built as a final project for my Computer G
 * `Techniques`
   * Antialisaing (x4)
   * Areal lighting
+</details>
+
+
+
 
 # How it was built? Good & Bad decisions..
 
