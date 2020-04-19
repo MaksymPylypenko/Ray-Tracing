@@ -24,7 +24,7 @@ bool Triangle::isHit(Ray ray) {
 	
 		if (plane->inside) {
 			// INSIDE HIT
-			if (axProj <= 0 && bxProj <= 0 && cxProj <= 0) {
+			if (axProj < 0 && bxProj < 0 && cxProj < 0) {
 				normal = plane->normal;
 				inside = true;
 				hit = true;

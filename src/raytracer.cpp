@@ -55,56 +55,50 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 
 	if (closest->rayLen != ray.maxLen) {
 				
-
 		if (showDebug) {
 			closest->debug();
 		}
 
 		glm::vec3 hitPos = ray.origin + closest->rayLen * ray.direction;
+		bool inside = closest->inside;
 			
-		/// UNION & INTERSECTION OF OBJECTS
-		//if (closest->isNegative && !ray.blendingMode) {
-		//	ray.blendingMode = true;
-		//	ray.origin = hitPos;
-		//	//ray.isInside = !ray.isInside;
+		/// Union & Intersection & Subtraction of objects
+		if (closest->isNegative && !inside && !ray.blendingMode) {
+			ray.blendingMode = true;
+			ray.origin = hitPos;
+			if (showDebug) {
+				printf("Hitting a negative object ...\n\n");
+			}
+			return trace(ray, showDebug);
+		}
+		else if (closest->isNegative && inside && ray.blendingMode) {
+			ray.blendingMode = false;
+			
+			if (!ray.negativeOn) {
+				if (showDebug) {
+					printf("Leaving a negative object\n\n");
+				}
+				ray.origin = hitPos;
+				return trace(ray, showDebug);
+			}
+			if (showDebug) {
+				printf("Rendering a inner part of a negative object\n\n");
+			}			
+		}
+		else if (!closest->isNegative && ray.blendingMode) {
 
-		//	if (showDebug) {
-		//		printf("Hitting a negative object ...\n\n");
-		//	}
-
-		//	return trace(ray, showDebug);
-		//}
-		//else if (closest->isNegative && ray.blendingMode) {
-		//	ray.blendingMode = false;
-		//	
-		//	if (!ray.negativeOn) {
-		//		if (showDebug) {
-		//			printf("Leaving a negative object\n\n");
-		//		}
-		//		ray.origin = hitPos;
-		//		ray.isInside = !ray.isInside;
-		//		return trace(ray, showDebug);
-		//	}
-		//	if (showDebug) {
-		//		printf("Rendering a inner part of a negative object\n\n");
-		//	}			
-		//}
-		//else if (!closest->isNegative && ray.blendingMode) {
-
-		//	if (showDebug) {
-		//		printf("Hitting a positive object\n\n");
-		//	}
-		//	ray.origin = hitPos;
-		//	ray.isInside = !ray.isInside;
-		//	ray.negativeOn = !ray.negativeOn;
-		//	return trace(ray, showDebug);
-		//}
+			if (showDebug) {
+				printf("Hitting a positive object\n\n");
+			}
+			ray.origin = hitPos;
+			ray.negativeOn = !ray.negativeOn;
+			return trace(ray, showDebug);
+		}
 		
 		
 		glm::vec3 V = -ray.direction;
 		glm::vec3 N = closest->normal;
 		Material * material = closest->material;
-		bool inside = closest->inside;
 
 		if (material->transmission == glm::vec3(0,0,0)) { // absorb everything			
 			colour = applyLights(material, N, V, hitPos);
