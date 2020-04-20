@@ -47,7 +47,7 @@ glm::vec3 Directional::apply(std::vector<Object*> objects, Material* material,
 	ray.origin = hitPos;
 	ray.direction = L;
 
-	if (!isShadow(ray)) {
+	if (!traceShadow(ray)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -68,7 +68,7 @@ glm::vec3 Point::apply(std::vector<Object*> objects, Material* material,
 	ray.maxLen = lightRayLen;
 	ray.direction = L;
 
-	if (!isShadow(ray)) {
+	if (!traceShadow(ray)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -94,7 +94,7 @@ glm::vec3 Spot::apply(std::vector<Object*> objects, Material* material,
 		ray.maxLen = lightRayLen;
 		ray.direction = L;
 
-		if (!isShadow(ray)) {
+		if (!traceShadow(ray)) {
 			return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 		}
 	}	
@@ -125,7 +125,7 @@ glm::vec3 Area::apply(std::vector<Object*> objects, Material* material,
 		ray.maxLen = lightRayLen;
 		ray.direction = L;
 
-		if (!isShadow(ray)) {
+		if (!traceShadow(ray)) {
 			incoming = phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 		}
 		else {

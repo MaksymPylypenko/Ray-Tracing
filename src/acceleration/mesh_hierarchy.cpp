@@ -55,7 +55,7 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 }
 
 
-bool MeshHierarchy::isHit(Ray ray) {
+bool MeshHierarchy::isHit(Ray ray, Hit & hit) {
 
 	// @TODO add shadow ray hit...
 
@@ -64,12 +64,7 @@ bool MeshHierarchy::isHit(Ray ray) {
 	}
 
 	if (isLeave) { // Checking each triangle on the small mesh	
-		if (mesh->isHit(ray)) {
-			rayLen = mesh->rayLen;
-			normal = mesh->normal;
-			material = mesh->material;
-			isNegative = mesh->isNegative;
-			inside = mesh->inside;
+		if (mesh->isHit(ray, hit)) {			
 			return true;
 		}
 		else {
@@ -77,22 +72,20 @@ bool MeshHierarchy::isHit(Ray ray) {
 		}
 	}
 	else { // Checking the next round of Bounding Volumes	
-		rayLen = ray.maxLen;
 
+		Hit curr = Hit();
+	
 		for (MeshHierarchy* child : children) {
 			if (child) {
-				if (child->isHit(ray)) {
-					if (child->rayLen < rayLen) { // looking for the closest hit
-						rayLen = child->rayLen;
-						normal = child->normal;
-						material = child->material;
-						isNegative = child->isNegative;
-						inside = child->inside;
+				if (child->isHit(ray, curr)) {			
+					if (curr.rayLen < hit.rayLen) {
+						hit = curr;
 					}
 				}
-			}
+			}			
 		}
-		if (rayLen != ray.maxLen) {
+
+		if (hit.object != nullptr) {		
 			return true;
 		}
 	}
@@ -100,6 +93,3 @@ bool MeshHierarchy::isHit(Ray ray) {
 	return false;
 }
 
-void MeshHierarchy::debug() {
-	printf("MeshHierarchy HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
-}

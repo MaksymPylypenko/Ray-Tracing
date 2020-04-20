@@ -1,21 +1,19 @@
 #include "model.h"
 
 
-bool Mesh::isHit(Ray ray) {
-	rayLen = ray.maxLen;
+bool Mesh::isHit(Ray ray, Hit& hit) {
+	
+	Hit curr = Hit();	
 
-	for (Triangle* triangle : triangles) {
-		if (triangle->isHit(ray)) {
-			if (triangle->rayLen < rayLen) {
-				rayLen = triangle->rayLen;
-				normal = triangle->normal;
-				material = triangle->material;
-				isNegative = triangle->isNegative;
-				inside = triangle->inside;
+	for (Triangle* triangle : triangles) {	
+		if (triangle->isHit(ray, curr)) {
+			if (curr.rayLen < hit.rayLen) {
+				hit = curr;
 			}
-		}
+		}		
 	}
-	if (rayLen != ray.maxLen) {
+
+	if (hit.object != nullptr) {
 		return true;
 	}
 	return false;
@@ -41,10 +39,6 @@ void Mesh::resetOrigin() {
 	center = (min + max) / 2.0f;
 }
 
-
-void Mesh::debug() {
-	printf("Mesh @ RayLen = %f\n", rayLen);
-}
 
 
 // Transformations

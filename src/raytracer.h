@@ -11,7 +11,7 @@ float loadScene(char* fn);
 glm::vec3 trace(Ray ray, bool showDebug);
 
 // Similar to trace, except it finds the first hit, not the closest one
-bool isShadow(Ray ray);
+bool traceShadow(Ray ray);
 
 
 #endif raytracer_h

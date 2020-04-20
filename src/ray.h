@@ -12,6 +12,7 @@ public:
 	float maxLen = 999.0f;
 
 	int bouncesLeft = 5;
+	bool closest = true;
 
 	void reflect(glm::vec3 hitPos, glm::vec3 N, glm::vec3 V);
 	bool refract(glm::vec3 hitPos, glm::vec3 N, float eta, bool inside);

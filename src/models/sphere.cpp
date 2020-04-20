@@ -1,7 +1,6 @@
 #include "model.h"
 
-
-bool Sphere::isHit(Ray ray) {
+bool Sphere::isHit(Ray ray, Hit& hit) {
 		
 	glm::vec3 L = ray.origin - center;
 	float a = dot(ray.direction, ray.direction);
@@ -11,11 +10,13 @@ bool Sphere::isHit(Ray ray) {
 	if (discriminant < 0) {
 		return false;
 	}
-
+	   
 	float sqrtDisc = sqrt(discriminant);
 	float rest = dot(-ray.direction, L) / a;
 
 	if (discriminant > ray.minLen) {
+		
+		hit.inside = false;
 		float t0 = rest + sqrtDisc / dot(ray.direction, ray.direction);
 		float t1 = rest - sqrtDisc / dot(ray.direction, ray.direction);
 	
@@ -23,7 +24,6 @@ bool Sphere::isHit(Ray ray) {
 			std::swap(t0, t1); // make sure t0 is the smallest
 		}
 
-		inside = false;
 		if (t0 < ray.minLen) {
 			//printf("\nT0 = %f, T1 = %f\n", t0, t1);
 			t0 = t1;
@@ -33,29 +33,31 @@ bool Sphere::isHit(Ray ray) {
 				return false;
 			} 
 			else {
-				inside = true;
+				hit.inside = true;
 			}			
 		}
-		rayLen = t0;
+		hit.rayLen = t0;
 	}
 	else {  // discriminant == 0 
-		rayLen = rest;
+		hit.rayLen = rest;
 	}
 
-	if (rayLen < ray.minLen || rayLen > ray.maxLen) {
+	if (hit.rayLen < ray.minLen || hit.rayLen > ray.maxLen) {
 		//inside = false;
 		return false;
 	}
 	
-	normal = normalize((ray.origin + ray.direction * rayLen) - center);
-	if (inside) {
-		normal = -normal;
+	hit.normal = normalize((ray.origin + ray.direction * hit.rayLen) - center);
+	if (hit.inside) {
+		hit.normal *= -1;
 	}
 		
 	// Experimenting with bump mapping
 	//normal = glm::vec4(normal, 1) * glm::rotate(glm::mat4(),
 	//glm::radians((float)(rand() % 160 - 80)),
 	//glm::vec3((rand() % 2), (rand() % 2), (rand() % 2)));
+
+	hit.object = this;
 
 	return true;
 }
@@ -74,6 +76,7 @@ void Sphere::applyTexture(glm::vec3 hitPos) {
 	material->Ka = texture->getPixel(u, v);
 }
 
-void Sphere::debug() {
-	printf("Sphere HIT %s @ RayLen = %f, \n", inside ? "from [Inside]" : "from [Outside]", rayLen);
+
+void Sphere::toString() {
+	printf("Sphere");
 }

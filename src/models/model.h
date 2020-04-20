@@ -14,6 +14,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+class Object;
+
+class Hit {
+public:
+	Object* object = nullptr;
+	glm::vec3 normal;
+	float rayLen = 999.0; // max ray len
+	bool inside = false;
+};
+
+void debug(Ray& ray, Hit& hit);
+
 
 class Material {
 public:
@@ -29,36 +41,31 @@ public:
 
 class Object {
 public:		
-	glm::vec3 center;	
-	glm::vec3 normal;
-	
+	glm::vec3 center;		
 	Material * material = nullptr;
 	Texture* texture = nullptr;
 	bool isNegative;
 
-	// Hit information
-	float rayLen = 0.0;
-	bool inside = false;
-
-	virtual bool isHit(Ray ray);	
+	virtual bool isHit(Ray ray, Hit& hit);	
 	virtual void applyTexture(glm::vec3 hitPos);	   
-	virtual void debug();
+	virtual void toString();
 };
-
 
 class Sphere : public Object {
 public:
 	float radius;
-	bool isHit(Ray ray) override;
+	bool isHit(Ray ray, Hit& hit) override;
 
 	void applyTexture(glm::vec3 hitPos) override;
-	void debug() override;
+	void toString() override;
 };
 
 
 class Plane : public Object {
 public:
-	bool isHit(Ray ray) override;
+	bool isHit(Ray ray, Hit& hit) override;
+
+	glm::vec3 normal;
 
 	// for textures
 	glm::vec3 axisU;
@@ -66,7 +73,7 @@ public:
 	void alignTextureAxes();
 	void applyTexture(glm::vec3 hitPos);
 
-	void debug() override;
+	void toString() override;
 };
 
 
@@ -78,13 +85,16 @@ public:
 	/// For instance, it will be different for outside & inside hits. 
 	/// A [fixedNormal] is generated when triangle is created and is based 
 	/// purely on the winding.
-	glm::vec3 fixedNormal;
+	glm::vec3 normal;
 	void setNormal();
-	bool hitPlane(Ray ray);
+	bool hitPlane(Ray ray, Hit& hit);
 
-	bool isHit(Ray ray) override;	   
-	void debug() override;
+	bool isHit(Ray ray, Hit& hit) override;
+	void toString() override;
 
+	// for textures
+	glm::vec3 axisU;
+	glm::vec3 axisV;
 	void applyTexture(glm::vec3 hitPos);
 
 	// for acceleration
@@ -100,7 +110,7 @@ class Mesh : public Object {
 /// To hit a [Mesh] the ray should hit a triangle.
 /// Note, only the closest hit is considered
 public:
-	bool isHit(Ray ray) override;
+	bool isHit(Ray ray, Hit & hit) override;
 
 	std::vector<Triangle*> triangles;
 
@@ -118,8 +128,6 @@ public:
 	void scale(float scale);
 	void addQuaternion(glm::vec3 axis, float angle);
 	void rotate();
-
-	void debug() override;
 };
 
 

@@ -24,9 +24,11 @@ glm::vec3 applyLights(Material * material,
 	return colour;
 }
 
-bool isShadow(Ray ray) {
+bool traceShadow(Ray ray) {
+
 	for (Object* object : scene->objects) {
-		if (object->isHit(ray)) {
+		Hit dummy = Hit();
+		if (object->isHit(ray, dummy)) {
 			return true;
 		}
 	}
@@ -41,29 +43,30 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 		
 	glm::vec3 colour(0, 0, 0);			
 
-	Object* closest = new Object();
-	closest->rayLen = ray.maxLen;
+	Hit currentHit = Hit();
+	Hit closestHit = Hit();	
 
 	// traverse the objects	
 	for (Object* object : scene->objects) {
-		if (object->isHit(ray)) {
-			if (object->rayLen < closest->rayLen) {
-				closest = object;
-			}
-		}
+		if (object->isHit(ray, currentHit)) {
+			if (currentHit.rayLen < closestHit.rayLen) {
+				closestHit = currentHit;
+			}		
+		}		
 	}
 
-	if (closest->rayLen != ray.maxLen) {
-				
+	if (closestHit.object != nullptr) {
+	
 		if (showDebug) {
-			closest->debug();
+			debug(ray, closestHit);
 		}
 
-		glm::vec3 hitPos = ray.origin + closest->rayLen * ray.direction;
-		bool inside = closest->inside;
+		Object * obj = closestHit.object;
+		glm::vec3 hitPos = ray.origin + closestHit.rayLen * ray.direction;
+		
 			
 		/// Union & Intersection & Subtraction of objects
-		if (closest->isNegative && !inside && !ray.blendingMode) {
+		if (obj->isNegative && !closestHit.inside && !ray.blendingMode) {
 			ray.blendingMode = true;
 			ray.origin = hitPos;
 			if (showDebug) {
@@ -71,7 +74,7 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 			}
 			return trace(ray, showDebug);
 		}
-		else if (closest->isNegative && inside && ray.blendingMode) {
+		else if (obj->isNegative && closestHit.inside && ray.blendingMode) {
 			ray.blendingMode = false;
 			
 			if (!ray.negativeOn) {
@@ -85,7 +88,7 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 				printf("Rendering a inner part of a negative object\n\n");
 			}			
 		}
-		else if (!closest->isNegative && ray.blendingMode) {
+		else if (!obj->isNegative && ray.blendingMode) {
 
 			if (showDebug) {
 				printf("Hitting a positive object\n\n");
@@ -97,20 +100,20 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 		
 		// Normal trace routine ...
 
-		if (closest->texture->mode != TextureMode::none) {
-			closest->applyTexture(hitPos);
+		if (obj->texture->mode != TextureMode::none) {
+			obj->applyTexture(hitPos);
 		}
 		
 		glm::vec3 V = -ray.direction;
-		glm::vec3 N = closest->normal;
-		Material * material = closest->material;
+		glm::vec3 N = closestHit.normal;
+		Material * material = obj->material;
 
 		if (material->transmission == glm::vec3(0,0,0)) { // absorb everything			
 			colour = applyLights(material, N, V, hitPos);
 		}
 		else { // absorb some portion of a light			
 
-			if (inside) { // don't want to trap light inside...
+			if (closestHit.inside) { // don't want to trap light inside...
 				glm::vec3 absorbed = 1.0f - material->transmission;
 				colour = absorbed * applyLights(material, N, V, hitPos);
 			}				
@@ -119,9 +122,9 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 				// Doesn't work if an object is inside another object... 
 				float eta = material->refraction;
 
-				if (ray.refract(hitPos, N, eta, inside)) {
+				if (ray.refract(hitPos, N, eta, closestHit.inside)) {
 					if (showDebug) {
-						if (inside) {
+						if (closestHit.inside) {
 							printf("Refracting MATERIAL --> AIR\n\n");
 						}
 						else {
