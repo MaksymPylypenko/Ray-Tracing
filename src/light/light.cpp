@@ -102,7 +102,10 @@ glm::vec3 Area::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* mate
 
 	std::vector<glm::vec3> samples;
 
-	for (int i = 0; i < 100; i++) {
+	bool prevNoShadow = false;
+	int noShadowSequence = 0; 
+
+	for (int i = 0; i < 20; i++) {
 		float lenU = distU * (rand() % 100 + 1) / 100.0f;
 		float lenV = distV * (rand() % 100 + 1) / 100.0f;
 
@@ -121,9 +124,20 @@ glm::vec3 Area::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* mate
 		ray.direction = L;
 
 		if (!traceShadow(ray)) {
+			if (prevNoShadow) {
+				noShadowSequence++;
+			}			
+			prevNoShadow = true;
+			if (prevNoShadow > 5) {
+				return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
+			}
+
 			incoming = phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 		}
-		else {
+		else {			
+			prevNoShadow = false;
+			noShadowSequence = 0;
+			
 			incoming = glm::vec3(0, 0, 0);
 		}
 		samples.push_back(incoming);
@@ -134,4 +148,40 @@ glm::vec3 Area::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* mate
 		total += curr;
 	}
 	return total / (float) samples.size();	
+}
+
+
+Object* Area:: makeLamp() {
+	glm::vec3 v = dirV * distV;
+	glm::vec3 u = dirU * distU;
+	glm::vec3 o = position;
+
+	Texture* texture = new Texture();
+	texture->mode = TextureMode::checkers;
+	Material* m = new Material();
+	m->Ka = colour;
+
+	Triangle* left = new Triangle();
+	left->material = m;
+	left->texture = texture;
+	left->points.push_back(o);
+	left->points.push_back(o + v);
+	left->points.push_back(o + v + u);
+
+	Triangle* right = new Triangle();
+	right->material = m;
+	right->texture = texture;
+	right->points.push_back(o);
+	right->points.push_back(o + v + u);
+	right->points.push_back(o + u);
+
+
+
+
+	Mesh* lamp = new Mesh();
+	lamp->triangles.push_back(left);
+	lamp->triangles.push_back(right);
+	lamp->resetNormals();
+
+	return lamp;
 }

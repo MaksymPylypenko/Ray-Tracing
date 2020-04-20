@@ -73,7 +73,17 @@ bool MeshHierarchy::isHit(Ray ray, Hit & hit) {
 
 		Hit curr = Hit();
 
-		if (ray.closest) {	
+		// Carefull!, the rayLen is not assigned if closest == false
+		if (!ray.closest) {	
+			for (MeshHierarchy* child : children) {
+				if (child) {
+					if (child->isHit(ray, curr)) {
+						return true;
+					}
+				}
+			}
+		}
+		else {
 			for (MeshHierarchy* child : children) {
 				if (child) {
 					if (child->isHit(ray, curr)) {
@@ -85,15 +95,6 @@ bool MeshHierarchy::isHit(Ray ray, Hit & hit) {
 			}
 			if (hit.object != nullptr) {
 				return true;
-			}
-		}
-		else {
-			for (MeshHierarchy* child : children) {
-				if (child) {
-					if (child->isHit(ray, curr)) {
-						return true;
-					}
-				}
 			}
 		}
 		

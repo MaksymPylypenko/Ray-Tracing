@@ -276,7 +276,8 @@ void SceneAdapter::loadThings() {
 			area->distU = float(light["distU"]);
 			area->distV = float(light["distV"]);
 			area->normal = normalize(cross(area->dirU, area->dirV));
-			lights.push_back(area);
+			lights.push_back(area);					
+			objects.push_back(area->makeLamp());
 		}
 	}
 }

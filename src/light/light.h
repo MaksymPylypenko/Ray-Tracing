@@ -60,6 +60,7 @@ public:
 	float distV = 0.0f;
 
 	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
+	Object* makeLamp();
 };
 
 

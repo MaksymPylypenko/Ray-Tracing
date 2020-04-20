@@ -24,7 +24,6 @@ public:
 
 	bool build(Mesh* mesh, int threshold = 4, int maxDepth = 20, int currDepth = 0);
 	bool isHit(Ray ray, Hit & hit) override;
-	void debug();
 };
 
 
