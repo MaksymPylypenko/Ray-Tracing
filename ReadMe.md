@@ -1,37 +1,6 @@
 # Ray tracing 
 
-This is a recursive ray tracer that I built as a final project for my Computer Graphics course.
-
-<details>
- <summary>A complete list of features</summary>
-<p>
-    
-* `Basic ray tracer`
-  * Bidirectional hit tests for [Sphere, Plane, Triangle]
-  * Phong illumination 
-  * Light sources: [Ambient, Point, Direction, Spot, Areal]
-  * Ray functions: Reflection, Refraction (or simple Transmission)
-  * Recursive trace function - finds the closest hit
-  * Shadow trace function - finds the first hit
-  * Ray debuger - prits the full path of a single ray
-* `Acceleration`
-  * Axis-Aligned Bounding Box (AABB) intersection test
-  * Acceleration data structure (BVH) for Meshes
-* `Transformations`
-  * Mesh translation
-  * Mesh scaling
-  * Mesh rotation (e.g. using axis & angle)
-* `Quality`
-  * Procedural texture mapping (e.g. checkerboard pattern).
-  * Custom texture mapping from a BMP file.
-* `New Geometry`
-  * Union
-  * Intersection
-  * Subtraction
-* `Techniques`
-  * Antialisaing (x4)
-  * Areal lighting
-</details>
+This is a recursive ray tracer that I built as a Computer Graphics project. List of completed features below...
 
 ## Reflection 
 When the ray hits a reflective surface, it can bounce.
@@ -95,6 +64,14 @@ I used [EasyBMP](http://easybmp.sourceforge.net/)
 * Render time: 19 seconds
 
 ![Image](https://github.com/MaksymPylypenko/Ray-Tracing/blob/master/rendered/%5B640x640%5D%20c_textures%2019%20sec.png)
+
+
+## Transformations
+Meshes can be translated, scaled and rotated
+
+`Scaling + Rotation`
+
+![Image](https://github.com/MaksymPylypenko/Ray-Tracing/blob/master/rendered/%5B640x640%5D%20c_transform%2014%20sec.png)
 
 ## Constructive solid geometry (CSG)
 Objects can be subtracted from each other wich may result in Subtraction / Intersection.
