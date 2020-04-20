@@ -1,7 +1,8 @@
 {
   "camera": {
     "field":      60,
-    "background": [1, 1, 1]
+    "background": [1, 1, 1],
+	"antialiasing" : false
   },
   
   "objects": [

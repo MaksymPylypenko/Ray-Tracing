@@ -40,7 +40,9 @@ glm::vec3 Ambient::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* m
 glm::vec3 Directional::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 
 	glm::vec3 L = -direction;
-	Ray toLight = Ray();	
+
+	Ray toLight = Ray();
+	toLight.origin = hitPos;
 	toLight.direction = L;
 
 	if (!traceShadow(toLight)) {
@@ -113,14 +115,17 @@ glm::vec3 Area::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* mate
 
 		glm::vec3 incoming;
 
-		Ray toLight = Ray();
-		toLight.origin = hitPos;
-		toLight.maxLen = lightRayLen;
-		toLight.direction = L;
-	
-		if (!traceShadow(toLight)) {
-			return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
-		} 
+		Ray ray = Ray();
+		ray.origin = hitPos;
+		ray.maxLen = lightRayLen;
+		ray.direction = L;
+
+		if (!traceShadow(ray)) {
+			incoming = phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
+		}
+		else {
+			incoming = glm::vec3(0, 0, 0);
+		}
 		samples.push_back(incoming);
 	}
 

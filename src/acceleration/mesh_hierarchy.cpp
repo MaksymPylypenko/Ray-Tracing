@@ -72,20 +72,31 @@ bool MeshHierarchy::isHit(Ray ray, Hit & hit) {
 	else { // Checking the next round of Bounding Volumes	
 
 		Hit curr = Hit();
-	
-		for (MeshHierarchy* child : children) {
-			if (child) {
-				if (child->isHit(ray, curr)) {			
-					if (curr.rayLen < hit.rayLen) {
-						hit = curr;
+
+		if (ray.closest) {	
+			for (MeshHierarchy* child : children) {
+				if (child) {
+					if (child->isHit(ray, curr)) {
+						if (curr.rayLen < hit.rayLen) {
+							hit = curr;
+						}
 					}
 				}
-			}			
+			}
+			if (hit.object != nullptr) {
+				return true;
+			}
 		}
-
-		if (hit.object != nullptr) {		
-			return true;
+		else {
+			for (MeshHierarchy* child : children) {
+				if (child) {
+					if (child->isHit(ray, curr)) {
+						return true;
+					}
+				}
+			}
 		}
+		
 	}
 
 	return false;

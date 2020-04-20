@@ -258,9 +258,15 @@ void display( void ) {
 		std::chrono::duration<double> elapsed = finish - start;
 		std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 		std::string savePath = "../rendered/";
+		
+		savePath.append("[");
+		savePath.append(std::to_string(vp_width));
+		savePath.append("x");
+		savePath.append(std::to_string(vp_height));
+		savePath.append("] ");
 		savePath.append(sceneName);
 		if (antialiasing) {
-			savePath.append("(x4) ");
+			savePath.append(" (x4) ");
 		}
 		else {
 			savePath.append(" ");
