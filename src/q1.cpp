@@ -7,6 +7,10 @@
 #include <glm/glm.hpp>
 #include <chrono>  // for high_resolution_clock
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION 
+#include "utility/stb_image_write.h" // to save rendered images, https://github.com/nothings/stb 
+#include <string>
+
 #define M_PI 3.14159265358979323846264338327950288
 
 const char *WINDOW_TITLE = "Ray Tracing";
@@ -26,8 +30,73 @@ float fov;
 point3 eye;
 float d = 1;
 
+
 std::chrono::time_point<std::chrono::high_resolution_clock> start;
 std::chrono::time_point<std::chrono::high_resolution_clock> finish;
+char* sceneName;
+
+
+
+//----------------------------------------------------------------------------
+// Taken from here https://github.com/vallentin/GLCollection/blob/master/screenshot.cpp
+
+void flipVertically(int width, int height, char* data)
+{
+	char rgb[3];
+
+	for (int y = 0; y < height / 2; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			int top = (x + y * width) * 3;
+			int bottom = (x + (height - y - 1) * width) * 3;
+
+			memcpy(rgb, data + top, sizeof(rgb));
+			memcpy(data + top, data + bottom, sizeof(rgb));
+			memcpy(data + bottom, rgb, sizeof(rgb));
+		}
+	}
+}
+
+int saveScreenshot(const char* filename)
+{
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+
+	int x = viewport[0];
+	int y = viewport[1];
+	int width = viewport[2];
+	int height = viewport[3];
+
+	char* data = (char*)malloc((size_t)(width * height * 3)); // 3 components (R, G, B)
+
+	if (!data)
+		return 0;
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	flipVertically(width, height, data);
+
+	int saved = stbi_write_png(filename, width, height, 3, data, 0);
+
+	free(data);
+
+	return saved;
+}
+
+
+int captureScreenshot(std::string savePath)
+{
+	int saved = saveScreenshot(savePath.c_str());
+
+	if (saved)
+		printf("Successfully Saved Image: %s\n", savePath.c_str());
+	else
+		fprintf(stderr, "Failed Saving Image: %s\n", savePath.c_str());
+
+	return saved;
+}
 
 //----------------------------------------------------------------------------
 
@@ -51,8 +120,9 @@ point3 s(int x, int y, float offsetX = 0.0, float offsetY = 0.0 ) {
 
 // OpenGL initialization
 void init(char *fn) {
-	loadScene(fn, fov, antialiasing); // Importing to my own data structure!
-   
+	sceneName = fn;
+	loadScene(fn, fov, antialiasing); // Importing to my own data structure! 
+
 	// Create a vertex array object
 	GLuint vao;
 	glGenVertexArrays( 1, &vao );
@@ -187,6 +257,18 @@ void display( void ) {
 		finish = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> elapsed = finish - start;
 		std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+		std::string savePath = "../rendered/";
+		savePath.append(sceneName);
+		if (antialiasing) {
+			savePath.append("(x4) ");
+		}
+		else {
+			savePath.append(" ");
+		}		
+		savePath.append(std::to_string((int)round(elapsed.count())));
+		
+		savePath.append(" sec.png");
+		captureScreenshot(savePath);
 	}	
 }
 

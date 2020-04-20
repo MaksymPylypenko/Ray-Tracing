@@ -78,6 +78,9 @@
     <ClInclude Include="..\src\ray.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\utility\stb_image_write.h">
+      <Filter>Source Files\utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
