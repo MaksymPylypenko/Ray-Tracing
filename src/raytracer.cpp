@@ -95,6 +95,11 @@ glm::vec3 trace(Ray ray, bool showDebug) {
 			return trace(ray, showDebug);
 		}
 		
+		// Normal trace routine ...
+
+		if (closest->texture->mode != TextureMode::none) {
+			closest->applyTexture(hitPos);
+		}
 		
 		glm::vec3 V = -ray.direction;
 		glm::vec3 N = closest->normal;

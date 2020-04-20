@@ -55,6 +55,12 @@ void Mesh::resetBarycenters() {
 	}
 }
 
+void Mesh::resetNormals() {
+	for (Triangle* triangle : triangles) {
+		triangle->setNormal();
+	}
+}
+
 void Mesh::translate(glm::vec3 vector) {
 	for (Triangle* triangle : triangles) {
 		for (int i = 0; i < 3; i++) {

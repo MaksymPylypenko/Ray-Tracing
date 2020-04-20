@@ -183,7 +183,7 @@ void SceneAdapter::jsonImport() {
 				Triangle* triangle = new Triangle();
 				triangle->points.push_back(vector_to_vec3(triangleJson[0]));
 				triangle->points.push_back(vector_to_vec3(triangleJson[1]));
-				triangle->points.push_back(vector_to_vec3(triangleJson[2]));
+				triangle->points.push_back(vector_to_vec3(triangleJson[2]));	
 				triangle->material = material;				
 				triangle->texture = texture;		
 				triangle->isNegative = isNegative;
@@ -223,6 +223,7 @@ void SceneAdapter::jsonImport() {
 						
 			mesh->resetOrigin();
 			mesh->resetBarycenters();
+			mesh->resetNormals();
 
 			MeshHierarchy* mh = new MeshHierarchy();	
 			mh->build(mesh);			

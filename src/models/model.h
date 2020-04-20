@@ -74,9 +74,18 @@ class Triangle : public Object {
 public:
 	std::vector<glm::vec3> points;	
 
-	bool isHit(Ray ray) override;
-	   
+	/// Object's [normal] will change depending on the nature of the hit.
+	/// For instance, it will be different for outside & inside hits. 
+	/// A [fixedNormal] is generated when triangle is created and is based 
+	/// purely on the winding.
+	glm::vec3 fixedNormal;
+	void setNormal();
+	bool hitPlane(Ray ray);
+
+	bool isHit(Ray ray) override;	   
 	void debug() override;
+
+	void applyTexture(glm::vec3 hitPos);
 
 	// for acceleration
 	int nodeID;
@@ -102,6 +111,7 @@ public:
 
 
 	// transformations
+	void resetNormals();
 	void resetBarycenters();
 	glm::quat q;
 	void translate(glm::vec3 vector);

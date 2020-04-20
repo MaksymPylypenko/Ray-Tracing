@@ -4,25 +4,13 @@ bool Plane::isHit(Ray ray) {
 
 	float dotND = dot(normal, ray.direction);
 
-	if (dotND < -0.05) {
-		inside = true;
+	if (dotND < 0) {
+		rayLen = dot(normal, center - ray.origin) / dotND;	
+		if (rayLen > ray.minLen && rayLen < ray.maxLen) {
+			return true;
+		}		
 	}
-	else if (dotND > 0.05) {
-		inside = false;
-		dotND = -dotND;
-		normal = -normal;
-	}			
-	else { // parallel
-		return false;
-	}
-	
-	rayLen = dot(normal, center - ray.origin) / dotND;
 
-	
-	if (rayLen > ray.minLen && rayLen < ray.maxLen) {
-		return true;
-	}		
-	
 	return false;
 }
 

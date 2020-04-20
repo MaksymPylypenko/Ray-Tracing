@@ -30,7 +30,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> finish;
 
 //----------------------------------------------------------------------------
 
-point3 s(int x, int y) {
+point3 s(int x, int y, float offsetX = 0.0, float offsetY = 0.0 ) {
 	float aspect_ratio = (float)vp_width / vp_height;
 	float h = d * (float)tan((M_PI * fov) / 180.0 / 2.0);
 	float w = h * aspect_ratio;
@@ -40,8 +40,8 @@ point3 s(int x, int y) {
 	float left = -w;
 	float right = w;
    
-	float u = left + (right - left) * (x + 0.5f) / vp_width;
-	float v = bottom + (top - bottom) * (y + 0.5f) / vp_height;
+	float u = left + (right - left) * (x + 0.5f + offsetX) / vp_width;
+	float v = bottom + (top - bottom) * (y + 0.5f + offsetY) / vp_height;
    
 	return point3(u, v, -d);
 }
@@ -123,10 +123,11 @@ void display( void ) {
 					std::vector<glm::vec3> samples;
 					std::vector<glm::vec3> rays;
 
-					rays.push_back(normalize(s(x + offset, y + offset) - eye));
-					rays.push_back(normalize(s(x - offset, y - offset) - eye));
-					rays.push_back(normalize(s(x + offset, y - offset) - eye));
-					rays.push_back(normalize(s(x - offset, y + offset) - eye));
+					glm::vec3 rayDir = s(x, y);
+					rays.push_back(normalize(s(x, y, +offset, +offset) - eye));
+					rays.push_back(normalize(s(x, y, +offset, -offset) - eye));
+					rays.push_back(normalize(s(x, y, -offset, +offset) - eye));
+					rays.push_back(normalize(s(x, y, -offset, -offset) - eye));
 
 					for (glm::vec3 rayDir : rays) {
 						Ray ray = Ray();

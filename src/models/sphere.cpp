@@ -47,16 +47,11 @@ bool Sphere::isHit(Ray ray) {
 		return false;
 	}
 	
-
 	normal = normalize((ray.origin + ray.direction * rayLen) - center);
 	if (inside) {
 		normal = -normal;
 	}
-			
-	if (texture->mode != TextureMode::none) {
-		applyTexture(ray.origin + ray.direction * rayLen);
-	}	
-
+		
 	// Experimenting with bump mapping
 	//normal = glm::vec4(normal, 1) * glm::rotate(glm::mat4(),
 	//glm::radians((float)(rand() % 160 - 80)),
