@@ -18,12 +18,13 @@ class SceneAdapter {
 public:	
 	json scene;
 	double fov = 60;
+	bool antialiasing = false;
 	glm::vec3 background_colour;
 	std::vector<Object*> objects;
 	std::vector<Light*> lights;
 
-	void choose_scene(char const* fn);
-	void jsonImport();
+	void chooseScene(char const* fn);
+	void loadThings();
 };
 
 #endif scene_adapter_h

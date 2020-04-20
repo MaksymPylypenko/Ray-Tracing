@@ -41,6 +41,6 @@ void Plane::applyTexture(glm::vec3 hitPos) {
 }
 
 
-void Plane::toString() {
+void Plane::printName() {
 	printf("Plane");
 }

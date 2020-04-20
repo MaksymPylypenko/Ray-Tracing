@@ -1,6 +1,7 @@
 #include "light.h"
 #include "../raytracer.h"
 
+
 glm::vec3 phong(glm::vec3 L, glm::vec3 N, glm::vec3 V,
 	glm::vec3 Kd, glm::vec3 Ks, float shininess, glm::vec3 Ids)
 {
@@ -26,28 +27,23 @@ glm::vec3 phong(glm::vec3 L, glm::vec3 N, glm::vec3 V,
 }
 
 
-glm::vec3 Light::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+glm::vec3 Light::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material){
 	return glm::vec3(0,0,0);
 }
 
 
-glm::vec3 Ambient::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos){ 	
+glm::vec3 Ambient::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 	return material->Ka * colour;
 }
 
 
-glm::vec3 Directional::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+glm::vec3 Directional::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 
 	glm::vec3 L = -direction;
+	Ray toLight = Ray();	
+	toLight.direction = L;
 
-	Ray ray = Ray();
-	ray.origin = hitPos;
-	ray.direction = L;
-
-	if (!traceShadow(ray)) {
+	if (!traceShadow(toLight)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -56,19 +52,18 @@ glm::vec3 Directional::apply(std::vector<Object*> objects, Material* material,
 }
 
 
-glm::vec3 Point::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+glm::vec3 Point::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 	
 	glm::vec3 L = position - hitPos;
 	float lightRayLen = length(L);
 	L = normalize(L);
 
-	Ray ray = Ray();
-	ray.origin = hitPos;
-	ray.maxLen = lightRayLen;
-	ray.direction = L;
+	Ray toLight = Ray();
+	toLight.origin = hitPos;
+	toLight.maxLen = lightRayLen;
+	toLight.direction = L;
 
-	if (!traceShadow(ray)) {
+	if (!traceShadow(toLight)) {
 		return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 	}
 	else {
@@ -77,8 +72,7 @@ glm::vec3 Point::apply(std::vector<Object*> objects, Material* material,
 }
 
 
-glm::vec3 Spot::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+glm::vec3 Spot::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 
 	glm::vec3 L = position - hitPos;
 	float lightRayLen = length(L);
@@ -89,21 +83,20 @@ glm::vec3 Spot::apply(std::vector<Object*> objects, Material* material,
 	float angle = glm::degrees(acos(dotNL));
 
 	if (angle <= cutoff) {
-		Ray ray = Ray();
-		ray.origin = hitPos;
-		ray.maxLen = lightRayLen;
-		ray.direction = L;
+		Ray toLight = Ray();
+		toLight.origin = hitPos;
+		toLight.maxLen = lightRayLen;
+		toLight.direction = L;
 
-		if (!traceShadow(ray)) {
+		if (!traceShadow(toLight)) {
 			return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
 		}
-	}	
-	return glm::vec3(0, 0, 0);	
+	}
+	return glm::vec3(0, 0, 0);
 }
 
 
-glm::vec3 Area::apply(std::vector<Object*> objects, Material* material,
-	glm::vec3 N, glm::vec3 V, glm::vec3 hitPos) {
+glm::vec3 Area::apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material) {
 
 	std::vector<glm::vec3> samples;
 
@@ -120,17 +113,14 @@ glm::vec3 Area::apply(std::vector<Object*> objects, Material* material,
 
 		glm::vec3 incoming;
 
-		Ray ray = Ray();
-		ray.origin = hitPos;
-		ray.maxLen = lightRayLen;
-		ray.direction = L;
-
-		if (!traceShadow(ray)) {
-			incoming = phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
-		}
-		else {
-			incoming = glm::vec3(0, 0, 0);
-		}
+		Ray toLight = Ray();
+		toLight.origin = hitPos;
+		toLight.maxLen = lightRayLen;
+		toLight.direction = L;
+	
+		if (!traceShadow(toLight)) {
+			return phong(L, N, V, material->Kd, material->Ks, material->shininess, colour);
+		} 
 		samples.push_back(incoming);
 	}
 

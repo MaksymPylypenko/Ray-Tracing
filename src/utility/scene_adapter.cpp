@@ -25,7 +25,7 @@ glm::vec3 vector_to_vec3(const std::vector<float>& v) {
 }
 
 
-void SceneAdapter::choose_scene(char const* fn) {
+void SceneAdapter::chooseScene(char const* fn) {
 	if (fn == NULL) {
 		std::cout << "Using default input file " << PATH << "c.json\n";
 		fn = "c";
@@ -52,15 +52,19 @@ void SceneAdapter::choose_scene(char const* fn) {
 		background_colour = vector_to_vec3(camera["background"]);
 		std::cout << "Setting background colour to " << glm::to_string(background_colour) << std::endl;
 	}
+
+	if (camera.find("antialiasing") != camera.end()) {
+		antialiasing = camera["antialiasing"];
+		std::cout << "Antialiasing is " << (antialiasing ? "ON" : "OFF") << std::endl;
+	}
 }
 
 
 /****************************************************************************/
 
-void SceneAdapter::jsonImport() {
+void SceneAdapter::loadThings() {
+
 	json& jsonObjects = scene["objects"];
-
-
 
 	// traverse the objects	
 	for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
@@ -263,16 +267,16 @@ void SceneAdapter::jsonImport() {
 			spot->cutoff = float(light["cutoff"]);
 			lights.push_back(spot);
 		}
+		else if (light["type"] == "area") {
+			Area* area = new Area();
+			area->colour = vector_to_vec3(light["color"]);			
+			area->position = vector_to_vec3(light["position"]);
+			area->dirU = vector_to_vec3(light["dirU"]);
+			area->dirV = vector_to_vec3(light["dirV"]);
+			area->distU = float(light["distU"]);
+			area->distV = float(light["distV"]);
+			area->normal = normalize(cross(area->dirU, area->dirV));
+			lights.push_back(area);
+		}
 	}
-
-	//Area* area = new Area();
-	//area->position = glm::vec3(1, 3, 0);
-	//area->dirU = glm::vec3(0, 0, 1);
-	//area->dirV = glm::vec3(-1, 0, 0);
-	//area->distU = 2.0f;
-	//area->distV = 2.0f;
-	//area->normal = normalize(cross(area->dirU, area->dirV));
-	//area->colour = glm::vec3(0.8, 0.8, 0.8);
-	//lights.push_back(area);
-
 }

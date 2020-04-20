@@ -48,7 +48,7 @@ public:
 
 	virtual bool isHit(Ray ray, Hit& hit);	
 	virtual void applyTexture(glm::vec3 hitPos);	   
-	virtual void toString();
+	virtual void printName();
 };
 
 class Sphere : public Object {
@@ -57,7 +57,7 @@ public:
 	bool isHit(Ray ray, Hit& hit) override;
 
 	void applyTexture(glm::vec3 hitPos) override;
-	void toString() override;
+	void printName() override;
 };
 
 
@@ -73,7 +73,7 @@ public:
 	void alignTextureAxes();
 	void applyTexture(glm::vec3 hitPos);
 
-	void toString() override;
+	void printName() override;
 };
 
 
@@ -90,7 +90,7 @@ public:
 	bool hitPlane(Ray ray, Hit& hit);
 
 	bool isHit(Ray ray, Hit& hit) override;
-	void toString() override;
+	void printName() override;
 
 	// for textures
 	glm::vec3 axisU;

@@ -95,6 +95,6 @@ void Triangle::setBarycenter() {
 }
 
 
-void Triangle::toString() {
+void Triangle::printName() {
 	printf("Triangle");
 }

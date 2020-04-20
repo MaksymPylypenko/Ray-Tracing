@@ -11,31 +11,30 @@
 
 class Light {
 public:
-	virtual glm::vec3 apply(std::vector<Object*> objects, Material * material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	virtual glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
 };
+
 
 class Ambient : public Light {
 public:
 	glm::vec3 colour;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material * material);
 };
+
 
 class Point : public Light {
 public:
 	glm::vec3 colour;
 	glm::vec3 position;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
 };
+
 
 class Directional : public Light {
 public:
 	glm::vec3 colour;
 	glm::vec3 direction;
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
 };
 
 
@@ -44,10 +43,9 @@ public:
 	glm::vec3 colour;
 	glm::vec3 position;
 	glm::vec3 direction;
-	float cutoff;
+	float cutoff = 0.0f;
 
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
 };
 
 
@@ -58,11 +56,10 @@ public:
 	glm::vec3 dirU;
 	glm::vec3 dirV;
 	glm::vec3 normal;
-	float distU;
-	float distV;
+	float distU = 0.0f;
+	float distV = 0.0f;
 
-	glm::vec3 apply(std::vector<Object*> objects, Material* material,
-		glm::vec3 N, glm::vec3 V, glm::vec3 hitPos);
+	glm::vec3 apply(glm::vec3 hitPos, glm::vec3 V, glm::vec3 N, Material* material);
 };
 
 

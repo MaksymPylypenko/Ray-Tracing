@@ -98,9 +98,6 @@
     <ClCompile Include="..\src\models\triangle.cpp">
       <Filter>Source Files\models</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\light\light.cpp">
-      <Filter>Source Files\light</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\utility\scene_adapter.cpp">
       <Filter>Source Files\utility</Filter>
     </ClCompile>
@@ -124,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="..\src\ray.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\light\light.cpp">
+      <Filter>Source Files\light</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

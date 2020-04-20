@@ -57,13 +57,11 @@ bool MeshHierarchy::build(Mesh* newMesh, int threshold, int maxDepth, int currDe
 
 bool MeshHierarchy::isHit(Ray ray, Hit & hit) {
 
-	// @TODO add shadow ray hit...
-
 	if (!isHitBounds(ray, mesh->min, mesh->max)) {		
 		return false;
 	}
 
-	if (isLeave) { // Checking each triangle on the small mesh	
+	if (isLeave) { // Checking each triangle on a small mesh	
 		if (mesh->isHit(ray, hit)) {			
 			return true;
 		}

@@ -5,17 +5,27 @@ bool Mesh::isHit(Ray ray, Hit& hit) {
 	
 	Hit curr = Hit();	
 
-	for (Triangle* triangle : triangles) {	
-		if (triangle->isHit(ray, curr)) {
-			if (curr.rayLen < hit.rayLen) {
-				hit = curr;
+	if (ray.closest) {
+		for (Triangle* triangle : triangles) {
+			if (triangle->isHit(ray, curr)) {
+				if (curr.rayLen < hit.rayLen) {
+					hit = curr;
+				}
 			}
-		}		
-	}
+		}
 
-	if (hit.object != nullptr) {
-		return true;
+		if (hit.object != nullptr) {
+			return true;
+		}
 	}
+	else {
+		for (Triangle* triangle : triangles) {
+			if (triangle->isHit(ray, curr)) {
+				return true;
+			}
+		}
+	}
+	
 	return false;
 }
 

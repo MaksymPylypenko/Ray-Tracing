@@ -21,6 +21,7 @@ GLuint Window;
 int vp_width, vp_height;
 float drawing_y = 0;
 
+bool antialiasing;
 float fov;
 point3 eye;
 float d = 1;
@@ -50,7 +51,7 @@ point3 s(int x, int y, float offsetX = 0.0, float offsetY = 0.0 ) {
 
 // OpenGL initialization
 void init(char *fn) {
-	fov = loadScene(fn); // Importing to my own data structure!
+	loadScene(fn, fov, antialiasing); // Importing to my own data structure!
    
 	// Create a vertex array object
 	GLuint vao;
@@ -113,9 +114,7 @@ void display( void ) {
 		// only recalculate if this is a new scanline
 		if (drawing_y == int(drawing_y)) {
 
-			for (int x = 0; x < vp_width; x++) {
-
-				bool antialiasing = false;
+			for (int x = 0; x < vp_width; x++) {				
 
 				if (antialiasing)
 				{
@@ -134,7 +133,7 @@ void display( void ) {
 						ray.origin = eye;
 						ray.direction = rayDir;
 						samples.push_back(
-							trace(ray, false));
+							trace(ray));
 					}
 
 					glm::vec3 out;
@@ -148,7 +147,7 @@ void display( void ) {
 					Ray ray = Ray();
 					ray.origin = eye;
 					ray.direction = rayDir;
-					texture[x] = trace(ray, false);
+					texture[x] = trace(ray);
 				}
 	
 				
@@ -219,7 +218,8 @@ void mouse( int button, int state, int x, int y ) {
 			Ray ray = Ray();
 			ray.origin = eye;
 			ray.direction = rayDir;
-			trace(ray, true);			
+			ray.debugOn = true;
+			trace(ray);			
 			break;
 		}
 	}

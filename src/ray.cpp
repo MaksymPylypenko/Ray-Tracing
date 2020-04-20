@@ -1,5 +1,10 @@
 #include "ray.h"
 
+void Ray::turnBackAt(glm::vec3 hitPos) {
+	origin = hitPos;
+	direction = -direction;
+}
+
 
 void Ray::reflect(glm::vec3 hitPos, glm::vec3 N, glm::vec3 V) {
 	origin = hitPos;

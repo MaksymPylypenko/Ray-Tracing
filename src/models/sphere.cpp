@@ -77,6 +77,6 @@ void Sphere::applyTexture(glm::vec3 hitPos) {
 }
 
 
-void Sphere::toString() {
+void Sphere::printName() {
 	printf("Sphere");
 }

@@ -13,7 +13,9 @@ public:
 
 	int bouncesLeft = 5;
 	bool closest = true;
+	bool debugOn = false;
 
+	void turnBackAt(glm::vec3 hitPos);
 	void reflect(glm::vec3 hitPos, glm::vec3 N, glm::vec3 V);
 	bool refract(glm::vec3 hitPos, glm::vec3 N, float eta, bool inside);
 

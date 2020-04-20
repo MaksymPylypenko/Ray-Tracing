@@ -13,13 +13,13 @@ void Object::applyTexture(glm::vec3 hitPos) {
 }
 
 
-void Object::toString() {
+void Object::printName() {
 	printf("Abstract");	
 }
 
 
 void debug(Ray& ray, Hit& hit) {
-	hit.object->toString();
+	hit.object->printName();
 	printf(" HIT %s @ RayLen = %f, \n", 
 		hit.inside ? "from [Inside]" : "from [Outside]", 
 		hit.rayLen
