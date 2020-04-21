@@ -71,7 +71,7 @@ There is also a special case where the ray would reflect instead of refracting. 
 ## Acceleration data structure
 Bounding Volume Hierarchy (BVH) for meshes significantly improved the rendering speed of very complex objects. I also used the following [article](https://medium.com/@bromanz/another-view-on-the-classic-ray-aabb-intersection-algorithm-for-bvh-traversal-41125138b525) to improve the efficiency of my AABB intersection test.
 
-**You may use the following script to convert objects into a scene format**
+**You may use the following script to convert .obj files into a json format**
 
 ```
 srs/utility/obj2json.py
